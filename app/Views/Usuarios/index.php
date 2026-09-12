@@ -39,6 +39,7 @@
     font-size: 0.9rem;
     outline: none;
     transition: all 0.2s;
+    background: white;
   }
 
   .search-input:focus {
@@ -92,29 +93,54 @@
     border-bottom: 1px solid #f1f5f9;
     color: #334155;
     font-size: 0.92rem;
+    vertical-align: middle;
   }
 
   .custom-table tr:hover {
     background-color: #f8fafc;
   }
 
-  /* Badges de Roles */
-  .badge-role {
-    padding: 4px 10px;
+  /* Badges de Roles Estáticos y Modernos */
+  .role-badge {
+    padding: 5px 12px;
     border-radius: 20px;
     font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.5px;
+    display: inline-block;
+    text-transform: uppercase;
   }
 
-  .badge-admin {
-    background: #e0e7ff;
-    color: #3730a3;
+  .role-admin { background-color: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
+  .role-operador { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+  .role-cliente { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+
+  /* Botones de Acción (Editar con Lápiz y Eliminar) */
+  .actions-container {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
   }
 
-  .badge-operador {
-    background: #dcfce7;
-    color: #166534;
+  .btn-edit {
+    color: #1e40af;
+    background: #dbeafe;
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .btn-edit:hover {
+    background: #bfdbfe;
+    color: #1e3a8a;
   }
 
   .btn-delete {
@@ -125,7 +151,12 @@
     text-decoration: none;
     font-size: 0.85rem;
     font-weight: 600;
+    border: none;
+    cursor: pointer;
     transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
   }
 
   .btn-delete:hover {
@@ -133,7 +164,7 @@
     color: #991b1b;
   }
 
-  /* Modal de Registro */
+  /* Modales */
   .modal-overlay {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
@@ -172,6 +203,7 @@
     border-radius: 8px;
     font-size: 0.9rem;
     box-sizing: border-box;
+    background: #fff;
   }
 </style>
 <?= $this->endSection() ?>
@@ -184,7 +216,7 @@
     
     <div class="toolbar">
       <input type="text" id="buscador" class="search-input" placeholder="🔍 Buscar por nombre, email o rol..." onkeyup="filtrarTabla()">
-      <button onclick="abrirModal()" class="btn-primary-custom">➕ Nuevo Usuario</button>
+      <button onclick="abrirModalCrear()" class="btn-primary-custom">➕ Nuevo Usuario</button>
     </div>
   </div>
 
@@ -201,27 +233,36 @@
           <th>ID</th>
           <th>Nombre</th>
           <th>Email</th>
-          <th>Rol</th>
+          <th>Rol Asignado</th>
           <th style="text-align: right;">Acciones</th>
         </tr>
       </thead>
       <tbody>
         <?php if (!empty($usuarios)): ?>
           <?php foreach ($usuarios as $u): ?>
-            <?php $rolClean = strtolower($u['rol'] ?? 'operador'); ?>
+            <?php 
+              $rolClean = strtolower(trim($u['rol'] ?? 'operador')); 
+              $classRol = 'role-' . $rolClean;
+              $nombreUser = $u['nombre'] ?? $u['usuario'] ?? '';
+            ?>
             <tr>
               <td><strong>#<?= $u['id'] ?></strong></td>
-              <td><?= esc($u['nombre'] ?? $u['usuario'] ?? '') ?></td>
+              <td><?= esc($nombreUser) ?></td>
               <td><?= esc($u['email'] ?? '-') ?></td>
               <td>
-                <span class="badge-role <?= $rolClean === 'admin' ? 'badge-admin' : 'badge-operador' ?>">
-                  <?= strtoupper($rolClean) ?>
-                </span>
+                <span class="role-badge <?= $classRol ?>"><?= strtoupper($rolClean) ?></span>
               </td>
               <td style="text-align: right;">
-                <a href="<?= base_url('usuarios/eliminar/' . $u['id']) ?>" 
-                   onclick="return confirm('¿Confirma que desea eliminar el usuario <?= esc($u['nombre']) ?>?')" 
-                   class="btn-delete">🗑️ Eliminar</a>
+                <div class="actions-container">
+                    <!-- Botón Lápiz para abrir el modal de edición rápida -->
+                    <button type="button" class="btn-edit" onclick="abrirModalEditar(<?= $u['id'] ?>, '<?= esc($nombreUser, 'js') ?>', '<?= esc($u['email'] ?? '', 'js') ?>', '<?= $rolClean ?>')">
+                        ✏️ Editar
+                    </button>
+
+                    <a href="<?= base_url('usuarios/eliminar/' . $u['id']) ?>" 
+                       onclick="return confirm('¿Confirmas que deseas eliminar el usuario <?= esc($nombreUser, 'js') ?>?')" 
+                       class="btn-delete">🗑️ Eliminar</a>
+                </div>
               </td>
             </tr>
           <?php endforeach; ?>
@@ -236,7 +277,7 @@
 </div>
 
 <!-- Modal para Crear Usuario -->
-<div class="modal-overlay" id="modalUsuario">
+<div class="modal-overlay" id="modalCrear">
   <div class="modal-box">
     <h3 style="margin-top:0; color:#1f3864;">Nuevo Usuario</h3>
     <form action="<?= base_url('usuarios/guardar') ?>" method="POST">
@@ -257,11 +298,44 @@
         <select name="rol" required>
           <option value="operador">Operador</option>
           <option value="admin">Administrador</option>
+          <option value="cliente">Cliente</option>
         </select>
       </div>
       <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-        <button type="button" onclick="cerrarModal()" style="background:#e2e8f0; border:none; padding:10px 16px; border-radius:8px; cursor:pointer;">Cancelar</button>
+        <button type="button" onclick="cerrarModales()" style="background:#e2e8f0; border:none; padding:10px 16px; border-radius:8px; cursor:pointer; font-weight:600;">Cancelar</button>
         <button type="submit" class="btn-primary-custom">Guardar Usuario</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal para Editar Usuario (Se abre con el lápiz) -->
+<div class="modal-overlay" id="modalEditar">
+  <div class="modal-box">
+    <h3 style="margin-top:0; color:#1f3864;">✏️ Modificar Usuario y Rol</h3>
+    <!-- Apuntalo a tu ruta de actualizar, por ejemplo usuarios/actualizar o usuarios/modificar -->
+    <form id="formEditar" action="<?= base_url('usuarios/actualizar') ?>" method="POST">
+      <input type="hidden" name="id" id="edit_id">
+      
+      <div class="form-group">
+        <label>Nombre Completo</label>
+        <input type="text" name="nombre" id="edit_nombre" required>
+      </div>
+      <div class="form-group">
+        <label>Correo Electrónico</label>
+        <input type="email" name="email" id="edit_email" required>
+      </div>
+      <div class="form-group">
+        <label>Rol asignado</label>
+        <select name="rol" id="edit_rol" required>
+          <option value="admin">Administrador</option>
+          <option value="operador">Operador</option>
+          <option value="cliente">Cliente</option>
+        </select>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+        <button type="button" onclick="cerrarModales()" style="background:#e2e8f0; border:none; padding:10px 16px; border-radius:8px; cursor:pointer; font-weight:600;">Cancelar</button>
+        <button type="submit" class="btn-primary-custom">Actualizar Cambios</button>
       </div>
     </form>
   </div>
@@ -282,13 +356,22 @@
     });
   }
 
-  // Control del Modal Desplegable
-  function abrirModal() {
-    document.getElementById('modalUsuario').style.display = 'flex';
+  // Modales
+  function abrirModalCrear() {
+    document.getElementById('modalCrear').style.display = 'flex';
   }
 
-  function cerrarModal() {
-    document.getElementById('modalUsuario').style.display = 'none';
+  function abrirModalEditar(id, nombre, email, rol) {
+    document.getElementById('edit_id').value = id;
+    document.getElementById('edit_nombre').value = nombre;
+    document.getElementById('edit_email').value = email;
+    document.getElementById('edit_rol').value = rol;
+    document.getElementById('modalEditar').style.display = 'flex';
+  }
+
+  function cerrarModales() {
+    document.getElementById('modalCrear').style.display = 'none';
+    document.getElementById('modalEditar').style.display = 'none';
   }
 </script>
 <?= $this->endSection() ?>

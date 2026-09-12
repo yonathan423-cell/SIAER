@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Controllers;
+
 use App\Models\ParcelaModel;
 
 class Parcelas extends BaseController
@@ -13,20 +14,30 @@ class Parcelas extends BaseController
     }
 
     public function index()
-{
-    $anio    = $this->request->getGet('anio');
-    $cuartel = $this->request->getGet('cuartel');
+    {
+        $anio    = $this->request->getGet('anio');
+        $cuartel = $this->request->getGet('cuartel');
 
-    $builder = $this->parcelaModel;
-    if ($anio)    { $builder = $builder->where('anio_relevamiento', (int) $anio); }
-    if ($cuartel) { $builder = $builder->like('cuartel', $cuartel); }
+        $builder = $this->parcelaModel;
 
-    $data['parcelas']            = $builder->findAll();
-    $data['anioSeleccionado']    = $anio;
-    $data['cuartelSeleccionado'] = $cuartel;
+        if ($anio) { 
+            $builder = $builder->where('anio_relevamiento', (int) $anio); 
+        }
+        
+        if ($cuartel) { 
+            $builder = $builder->like('cuartel', $cuartel); 
+        } else {
+            // Prioriza los cuarteles 2 y 8 al cargar el listado general
+            $builder = $builder->orderBy("FIELD(cuartel, '2', '8') DESC", '', false)
+                               ->orderBy('id', 'ASC');
+        }
 
-    return view('parcelas/index', $data);
-}
+        $data['parcelas']            = $builder->findAll();
+        $data['anioSeleccionado']    = $anio;
+        $data['cuartelSeleccionado'] = $cuartel;
+
+        return view('parcelas/index', $data);
+    }
 
     public function crear()
     {
@@ -34,29 +45,28 @@ class Parcelas extends BaseController
     }
 
     public function guardar()
-{
-    $volver = $this->request->getPost('volver') ?: base_url('parcelas');
+    {
+        $volver = $this->request->getPost('volver') ?: base_url('parcelas');
 
-    $data = [
-        'nro_catastro'      => $this->request->getPost('nro_catastro'),
-        'latitud'           => $this->request->getPost('latitud'),
-        'longitud'          => $this->request->getPost('longitud'),
-        'superficie_ha'     => $this->request->getPost('superficie_ha'),
-        'propietario'       => $this->request->getPost('propietario'),
-        'cuartel'           => $this->request->getPost('cuartel'),
-        'anio_relevamiento' => $this->request->getPost('anio_relevamiento'),
-    ];
+        $data = [
+            'nro_catastro'      => $this->request->getPost('nro_catastro'),
+            'latitud'           => $this->request->getPost('latitud'),
+            'longitud'          => $this->request->getPost('longitud'),
+            'superficie_ha'     => $this->request->getPost('superficie_ha'),
+            'propietario'       => $this->request->getPost('propietario'),
+            'cuartel'           => $this->request->getPost('cuartel'),
+            'anio_relevamiento' => $this->request->getPost('anio_relevamiento'),
+        ];
 
-    if ($this->parcelaModel->insert($data) === false) {
-        return redirect()->back()
-            ->withInput()
-            ->with('errores', $this->parcelaModel->errors());
+        if ($this->parcelaModel->insert($data) === false) {
+            return redirect()->back()
+                ->withInput()
+                ->with('errores', $this->parcelaModel->errors());
+        }
+
+        return redirect()->to($volver)
+            ->with('mensaje', '✅ Parcela creada correctamente.');
     }
-
-    return redirect()->to($volver)
-        ->with('mensaje', '✅ Parcela creada correctamente.');
-}
-
 
     public function editar($id)
     {
@@ -88,23 +98,32 @@ class Parcelas extends BaseController
     }
 
     public function mapaJson()
-{
-    $anio    = $this->request->getGet('anio');
-    $cuartel = $this->request->getGet('cuartel');
+    {
+        $anio    = $this->request->getGet('anio');
+        $cuartel = $this->request->getGet('cuartel');
 
-    $builder = $this->parcelaModel;
-    if ($anio)    { $builder = $builder->where('anio_relevamiento', (int) $anio); }
-    if ($cuartel) { $builder = $builder->like('cuartel', $cuartel); }
+        $builder = $this->parcelaModel;
 
-    $puntos = array_map(function ($p) {
-        return [
-            'latitud'      => (float) $p['latitud'],
-            'longitud'     => (float) $p['longitud'],
-            'nro_catastro' => $p['nro_catastro'],
-            'cuartel'      => $p['cuartel'],
-        ];
-    }, $builder->findAll());
+        if ($anio) { 
+            $builder = $builder->where('anio_relevamiento', (int) $anio); 
+        }
 
-    return $this->response->setJSON($puntos);
-}
+        if ($cuartel) { 
+            $builder = $builder->like('cuartel', $cuartel); 
+        } else {
+            // Prioriza los cuarteles 2 y 8 en los marcadores del mapa
+            $builder = $builder->orderBy("FIELD(cuartel, '2', '8') DESC", '', false);
+        }
+
+        $puntos = array_map(function ($p) {
+            return [
+                'latitud'      => (float) $p['latitud'],
+                'longitud'     => (float) $p['longitud'],
+                'nro_catastro' => $p['nro_catastro'],
+                'cuartel'      => $p['cuartel'],
+            ];
+        }, $builder->findAll());
+
+        return $this->response->setJSON($puntos);
+    }
 }

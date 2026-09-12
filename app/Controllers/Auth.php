@@ -31,16 +31,40 @@ class Auth extends BaseController
                 ->with('error', 'Email o contraseña incorrectos.');
         }
 
-        // Guardamos las claves con los mismos nombres que consulta layout/base.php
+        // Normalizamos el rol a minúsculas por seguridad de comparación
+        $rol = strtolower($usuario['rol']);
+
+        // Guardamos las claves en la sesión
         session()->set([
             'usuario_id' => $usuario['id'],
-            'usuario'    => $usuario['nombre'], // Antes era usuario_nombre
-            'rol'        => $usuario['rol'],    // Antes era usuario_rol
-            'isLoggedIn' => true,               // Antes era logueado
+            'usuario'    => $usuario['nombre'],
+            'rol'        => $rol,
+            'isLoggedIn' => true,
         ]);
 
-        // Redirigimos al inicio de la web en lugar de a parcelas
-        return redirect()->to(base_url('/'))
+        // Redirección inteligente según el rol ingresado
+        switch ($rol) {
+            case 'admin':
+                // Administrador va al panel general / gestión de usuarios
+                $destino = '/'; // O '/usuarios' / '/dashboard' según tu preferencia
+                break;
+
+            case 'operador':
+                // Operador va directo al mapa / gestión de parcelas
+                $destino = '/parcelas'; 
+                break;
+
+            case 'cliente':
+                // Cliente va a su vista privada de consulta
+                $destino = '/mis-parcelas'; 
+                break;
+
+            default:
+                $destino = '/';
+                break;
+        }
+
+        return redirect()->to(base_url($destino))
             ->with('mensaje', 'Bienvenido, ' . $usuario['nombre'] . '.');
     }
 

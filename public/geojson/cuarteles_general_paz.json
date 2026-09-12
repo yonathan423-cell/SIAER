@@ -1,0 +1,69 @@
+﻿{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "cuartel": "1", "nombre": "Cuartel I - Ranchos (Urbano)" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-58.325, -35.510], [-58.300, -35.510], [-58.300, -35.528], [-58.325, -35.528], [-58.325, -35.510]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "cuartel": "2", "nombre": "Cuartel II" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-58.300, -35.510], [-58.220, -35.510], [-58.220, -35.550], [-58.300, -35.550], [-58.300, -35.510]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "cuartel": "3", "nombre": "Cuartel III" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-58.380, -35.510], [-58.325, -35.510], [-58.325, -35.560], [-58.380, -35.560], [-58.380, -35.510]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "cuartel": "4", "nombre": "Cuartel IV" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-58.325, -35.528], [-58.300, -35.528], [-58.300, -35.590], [-58.325, -35.590], [-58.325, -35.528]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "cuartel": "5", "nombre": "Cuartel V - Villanueva" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-58.450, -35.560], [-58.380, -35.560], [-58.380, -35.650], [-58.450, -35.650], [-58.450, -35.560]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "cuartel": "6", "nombre": "Cuartel VI" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-58.380, -35.560], [-58.300, -35.590], [-58.300, -35.670], [-58.380, -35.670], [-58.380, -35.560]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "cuartel": "7", "nombre": "Cuartel VII" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-58.300, -35.550], [-58.200, -35.550], [-58.200, -35.650], [-58.300, -35.650], [-58.300, -35.550]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "cuartel": "8", "nombre": "Cuartel VIII" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-58.450, -35.450], [-58.380, -35.450], [-58.380, -35.510], [-58.450, -35.510], [-58.450, -35.450]]]
+      }
+    }
+  ]
+}

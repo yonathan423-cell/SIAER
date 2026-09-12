@@ -148,20 +148,29 @@
             <span class="cabecera__subtitulo">Municipalidad de General Paz</span>
         </a>
         <nav class="cabecera__nav">
-            <!-- Menú de navegación común -->
-            <a href="<?= base_url('parcelas') ?>">Parcelas</a>
-            <a href="<?= base_url('parcelas/crear') ?>">+ Nueva parcela</a>
 
             <?php if (session()->get('isLoggedIn')): ?>
-                <!-- Accesos directos cuando hay sesión activa -->
-                <a href="<?= base_url('dashboard') ?>">📊 Dashboard</a>
+                <?php $rolSession = strtolower(session()->get('rol') ?? ''); ?>
 
-                <?php if (strtolower(session()->get('rol') ?? '') === 'admin'): ?>
-                    <!-- Módulo exclusivo de Administrador -->
+                <!-- Módulos para ADMIN y OPERADOR -->
+                <?php if (in_array($rolSession, ['admin', 'operador'])): ?>
+                    <a href="<?= base_url('parcelas') ?>">🗺️ Mapa</a>
+                    <a href="<?= base_url('parcelas/crear') ?>">+ Nueva parcela</a>
+                <?php endif; ?>
+
+                <!-- Módulos exclusivos de ADMIN -->
+                <?php if ($rolSession === 'admin'): ?>
+                    <a href="<?= base_url('dashboard') ?>">📊 Dashboard</a>
                     <a href="<?= base_url('usuarios') ?>">👥 Usuarios</a>
                 <?php endif; ?>
 
-                <!-- Insignia del usuario -->
+                <!-- Módulo exclusivo de CLIENTE -->
+                <?php if ($rolSession === 'cliente'): ?>
+                    <a href="<?= base_url('mis-parcelas') ?>">📌 Mis Parcelas</a>
+                    <a href="<?= base_url('parcelas') ?>">🗺️ Mapa</a>
+                <?php endif; ?>
+
+                <!-- Insignia del usuario logueado -->
                 <div class="user-badge">
                     👤 <strong><?= esc(session()->get('usuario')) ?></strong>
                     <?php if (session()->get('rol')): ?>
@@ -170,8 +179,9 @@
                 </div>
 
                 <a href="<?= base_url('logout') ?>" class="cabecera__logout">🚪 Salir</a>
+
             <?php else: ?>
-                <!-- Estado sin sesión -->
+                <!-- Estado sin sesión activa -->
                 <a href="<?= base_url('login') ?>" class="cabecera__login">Iniciar sesión</a>
             <?php endif; ?>
         </nav>
