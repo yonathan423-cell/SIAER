@@ -45,17 +45,14 @@ class Auth extends BaseController
         // Redirección inteligente según el rol ingresado
         switch ($rol) {
             case 'admin':
-                // Administrador va al panel general / gestión de usuarios
-                $destino = '/'; // O '/usuarios' / '/dashboard' según tu preferencia
+                $destino = '/'; 
                 break;
 
             case 'operador':
-                // Operador va directo al mapa / gestión de parcelas
                 $destino = '/parcelas'; 
                 break;
 
             case 'cliente':
-                // Cliente va a su vista privada de consulta
                 $destino = '/mis-parcelas'; 
                 break;
 
@@ -64,8 +61,9 @@ class Auth extends BaseController
                 break;
         }
 
+        // Mensaje limpio sin repetir el rol de forma extraña
         return redirect()->to(base_url($destino))
-            ->with('mensaje', 'Bienvenido, ' . $usuario['nombre'] . '.');
+            ->with('mensaje', '¡Hola, ' . $usuario['nombre'] . '! Que tengas una buena jornada.');
     }
 
     public function logout()
