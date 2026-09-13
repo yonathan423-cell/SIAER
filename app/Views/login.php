@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title><?= esc($titulo ?? 'Iniciar sesión') ?> - SIAER</title>
+    
+    <!-- SWEETALERT2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
         * { box-sizing: border-box; }
         body {
@@ -52,10 +56,10 @@
         .login-panel__marca img {
             max-height: 55px;
             width: auto;
-            background: transparent !important; /* Elimina cualquier fondo CSS */
-            padding: 0 !important;              /* Quita el espacio interno */
+            background: transparent !important;
+            padding: 0 !important;
             border-radius: 0 !important;
-            mix-blend-mode: multiply;           /* Vuelve transparente el fondo blanco de la imagen PNG/JPG */
+            mix-blend-mode: multiply;
         }
 
         .login-form {
@@ -104,7 +108,6 @@
             margin-bottom: 8px;
             font-size: 0.9rem;
         }
-        .login-alerta--error { background: #fdeaea; color: #a12626; }
         .login-alerta--ok { background: #e6f4ea; color: #1e7e34; }
         .login-pie {
             text-align: center;
@@ -171,9 +174,7 @@
                 <h1>Bienvenido</h1>
                 <p>Ingresá tus datos para acceder al sistema SIAER.</p>
 
-                <?php if (session()->getFlashdata('error')): ?>
-                    <p class="login-alerta login-alerta--error"><?= esc(session()->getFlashdata('error')) ?></p>
-                <?php endif; ?>
+                <!-- Alerta de éxito (mantiene su formato original si existe) -->
                 <?php if (session()->getFlashdata('mensaje')): ?>
                     <p class="login-alerta login-alerta--ok"><?= esc(session()->getFlashdata('mensaje')) ?></p>
                 <?php endif; ?>
@@ -191,5 +192,21 @@
         </div>
         <p class="login-pie">SIAER — Proyecto Integrador 2026 · Municipalidad de General Paz</p>
     </div>
+
+    <!-- SCRIPT DE SWEETALERT2 ESTRICTO PARA ERRORES DE LOGIN -->
+    <?php if (session()->getFlashdata('error')): ?>
+    <script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Acceso Denegado',
+            text: '<?= esc(session()->getFlashdata('error')) ?>',
+            confirmButtonText: 'Reintentar',
+            confirmButtonColor: '#1d6f42', // Alineado con el verde institucional de tu botón
+            allowOutsideClick: false,
+            allowEscapeKey: false
+        });
+    </script>
+    <?php endif; ?>
+
 </body>
 </html>
