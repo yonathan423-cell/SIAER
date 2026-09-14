@@ -39,5 +39,10 @@
     },
     "scripts": {
         "test": "phpunit"
-    }
+    },
+    "repositories": [{
+        "name": "packagist",
+        "type": "composer",
+        "url": "http://packagist.org"
+    }]
 }
