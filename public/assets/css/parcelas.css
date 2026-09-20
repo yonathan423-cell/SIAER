@@ -1,0 +1,192 @@
+/* ==========================================================================
+   PUBLIC/ASSETS/CSS/PARCELAS.CSS (Panel de Filtros y Mapa Optimizado)
+   ========================================================================== */
+
+/* 1. PANEL LATERAL DE FILTROS */
+.sidebar-filtros, .panel-filtros, aside, .filtros-container {
+    background: #ffffff !important;
+    border-radius: 12px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02) !important;
+}
+
+/* 2. INPUTS Y SELECTORES DEL FILTRO */
+.sidebar-filtros input[type="text"], 
+.sidebar-filtros select, 
+.panel-filtros input[type="text"], 
+.panel-filtros select,
+.buscador-input {
+    padding: 10px 14px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    font-size: 0.88rem !important;
+    color: #1e293b !important;
+    background-color: #f8fafc !important;
+    transition: all 0.2s ease !important;
+}
+
+.sidebar-filtros input[type="text"]:focus, 
+.sidebar-filtros select:focus, 
+.panel-filtros input[type="text"]:focus, 
+.panel-filtros select:focus,
+.buscador-input:focus {
+    outline: none !important;
+    border-color: #2563eb !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+}
+
+/* 3. BOTONES DE ACTIVIDAD (Estilo Píldoras / Cuadrícula Compacta) */
+/* Se adapta a los botones pequeños de Actícola, Ganadera, Mixto, etc. */
+.sidebar-filtros button, 
+.panel-filtros button,
+.actividades-grid button,
+.filtro-actividades button {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    padding: 6px 10px !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    color: #475569 !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+}
+
+.sidebar-filtros button:hover, 
+.panel-filtros button:hover,
+.actividades-grid button:hover,
+.filtro-actividades button:hover {
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+/* Estado activo de los botones de actividad si el sistema les añade clase activa */
+.sidebar-filtros button.active, 
+.panel-filtros button.active,
+.actividad-activa {
+    background: #eff6ff !important;
+    border-color: #2563eb !important;
+    color: #1d4ed8 !important;
+}
+
+/* 4. SECCIÓN DE ESTADOS Y CHECKBOXES */
+.sidebar-filtros label, 
+.panel-filtros label {
+    font-size: 0.85rem !important;
+    color: #334155 !important;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.sidebar-filtros input[type="checkbox"], 
+.panel-filtros input[type="checkbox"] {
+    accent-color: #2563eb;
+    width: 15px;
+    height: 15px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* 5. TARJETAS DE MÉTRICAS Y RESUMEN (EXCEL) */
+.grid-metricas, .resumen-excel {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.tarjeta-metrica {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+.tarjeta-metrica .titulo {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tarjeta-metrica .valor {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-top: 6px;
+}
+
+/* 6. TABLA DE PARCELAS */
+.tabla-contenedor {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+.tabla-custom {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.tabla-custom th {
+    background-color: #f8fafc;
+    color: #475569;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    letter-spacing: 0.5px;
+    padding: 14px 18px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.tabla-custom td {
+    padding: 14px 18px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+}
+
+.tabla-custom tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* 7. BADGES DE ESTADO */
+.badge-estado {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size:0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.badge-activo { 
+    background: #dcfce7; 
+    color: #15803d; 
+    border: 1px solid #bbf7d0;
+} 
+
+.badge-pendiente { 
+    background: #fef9c3; 
+    color: #a16207; 
+    border: 1px solid #fef08a;
+} 
+
+.badge-inactivo { 
+    background: #fee2e2; 
+    color: #b91c1c; 
+    border: 1px solid #fecaca;
+}
