@@ -43,6 +43,6 @@
     "repositories": [{
         "name": "packagist",
         "type": "composer",
-        "url": "http://packagist.org"
+        "url": "https://packagist.org"
     }]
 }
