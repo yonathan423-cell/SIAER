@@ -3,7 +3,7 @@
 <?= $this->section('estilos') ?>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
 <style>
-  
+
   /* Header Moderno y Elegante */
   .hero-simple {
     background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
@@ -128,6 +128,206 @@
     border-radius: 10px;
     border: 1px solid #e2e8f0;
   }
+
+  /* ===================== CHAT DE DUDAS ===================== */
+  .chat-fab {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #0f766e;
+    color: #fff;
+    border: none;
+    font-size: 1.6rem;
+    cursor: pointer;
+    box-shadow: 0 8px 20px -4px rgba(15, 118, 110, 0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+  .chat-fab:hover {
+    transform: scale(1.08);
+    background: #115e59;
+  }
+
+  .chat-ventana {
+    position: fixed;
+    bottom: 96px;
+    right: 24px;
+    width: 340px;
+    max-width: calc(100vw - 48px);
+    height: 480px;
+    max-height: calc(100vh - 130px);
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.25);
+    z-index: 1000;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    opacity: 0;
+    transform: translateY(15px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  .chat-ventana.abierto {
+    display: flex;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .chat-header {
+    background: linear-gradient(135deg, #0f766e 0%, #115e59 100%);
+    color: #fff;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .chat-header .chat-titulo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .chat-header .chat-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+  }
+  .chat-header .chat-estado {
+    font-size: 0.72rem;
+    color: #bbf7d0;
+    font-weight: 400;
+    display: block;
+  }
+  .chat-cerrar {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.3rem;
+    cursor: pointer;
+    line-height: 1;
+    opacity: 0.85;
+  }
+  .chat-cerrar:hover { opacity: 1; }
+
+  .chat-cuerpo {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    background: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .chat-msg {
+    max-width: 80%;
+    padding: 9px 13px;
+    border-radius: 14px;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+  }
+  .chat-msg.bot {
+    background: #ffffff;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+  }
+  .chat-msg.user {
+    background: #0f766e;
+    color: #ffffff;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+  }
+
+  .chat-typing {
+    align-self: flex-start;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 10px 14px;
+    display: flex;
+    gap: 4px;
+  }
+  .chat-typing span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #94a3b8;
+    animation: chatBlink 1.2s infinite;
+  }
+  .chat-typing span:nth-child(2) { animation-delay: 0.2s; }
+  .chat-typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes chatBlink {
+    0%, 60%, 100% { opacity: 0.3; }
+    30% { opacity: 1; }
+  }
+
+  .chat-chips {
+    padding: 10px 12px;
+    border-top: 1px solid #e2e8f0;
+    background: #ffffff;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    max-height: 120px;
+    overflow-y: auto;
+  }
+  .chat-chip {
+    background: #f0fdfa;
+    color: #0f766e;
+    border: 1px solid #99f6e4;
+    border-radius: 20px;
+    padding: 5px 11px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .chat-chip:hover { background: #ccfbf1; }
+
+  .chat-input-area {
+    display: flex;
+    gap: 8px;
+    padding: 10px 12px;
+    border-top: 1px solid #e2e8f0;
+    background: #ffffff;
+  }
+  .chat-input-area input {
+    flex: 1;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    outline: none;
+  }
+  .chat-input-area input:focus { border-color: #0f766e; }
+  .chat-enviar {
+    background: #0f766e;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    cursor: pointer;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .chat-enviar:hover { background: #115e59; }
 </style>
 <?= $this->endSection() ?>
 
@@ -148,7 +348,7 @@
     <h3>🌱 ¿Qué es SIAER?</h3>
     <p>Plataforma para la gestión y consulta georreferenciada de parcelas rurales del partido de General Paz, consolidando datos de actividad productiva e inspecciones.</p>
   </div>
-  
+
   <div class="info-card">
     <h3>⚡ Funcionalidades</h3>
     <ul>
@@ -165,16 +365,216 @@
   <div id="mapa-home"></div>
 </div>
 
+<!-- ===================== CHAT DE DUDAS ===================== -->
+<button class="chat-fab" id="chatFab" title="¿Dudas? Chateá con nosotros" aria-label="Abrir chat de dudas">💬</button>
+
+<div class="chat-ventana" id="chatVentana">
+  <div class="chat-header">
+    <div class="chat-titulo">
+      <div class="chat-avatar">🤖</div>
+      <div>
+        Asistente SIAER
+        <span class="chat-estado">● En línea</span>
+      </div>
+    </div>
+    <button class="chat-cerrar" id="chatCerrar" aria-label="Cerrar chat">&times;</button>
+  </div>
+
+  <div class="chat-cuerpo" id="chatCuerpo"></div>
+
+  <div class="chat-chips" id="chatChips"></div>
+
+  <div class="chat-input-area">
+    <input type="text" id="chatInput" placeholder="Escribí tu duda..." autocomplete="off">
+    <button class="chat-enviar" id="chatEnviar" aria-label="Enviar">➤</button>
+  </div>
+</div>
+
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-  const mapa = L.map('mapa-home', { zoomControl: false }).setView([-35.55, -58.78], 11);
-  L.control.zoom({ position: 'topright' }).addTo(mapa);
-  
+  // Centrado en el Partido de General Paz (cabecera: Ranchos)
+  const mapa = L.map('mapa-home').setView([-35.5164, -58.3189], 13);
+
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap'
   }).addTo(mapa);
+
+  // Marcador sobre Ranchos (cabecera del partido)
+  L.marker([-35.5164, -58.3189]).addTo(mapa)
+    .bindPopup('<strong>Ranchos</strong><br>Cabecera del Partido de General Paz')
+    .openPopup();
+</script>
+
+<!-- ===================== LÓGICA DEL CHAT DE DUDAS ===================== -->
+<script>
+  (function () {
+    // Base de conocimiento: cada duda tiene palabras clave + respuesta.
+    // Para agregar o editar una pregunta, sumá un objeto a esta lista. 👇
+    const BASE_CONOCIMIENTO = [
+      {
+        chip: "¿Qué es el SIAER?",
+        claves: ["que es", "siaer", "sistema", "sirve", "para que"],
+        respuesta: "El SIAER es el Sistema de Información y Análisis de Explotaciones Rurales de la Municipalidad de General Paz. Sirve para gestionar y consultar de forma georreferenciada las parcelas rurales del partido. 🌱"
+      },
+      {
+        chip: "¿Cómo registro una parcela?",
+        claves: ["registrar", "registro", "nueva parcela", "cargar parcela", "crear", "agregar parcela"],
+        respuesta: "Ingresá al menú Parcelas → Nueva Parcela, completá el número de catastro, las coordenadas, la superficie y el propietario, y tocá 'Guardar Parcela'. ✅"
+      },
+      {
+        chip: "¿Qué es el Nº de catastro?",
+        claves: ["catastro", "numero de catastro", "nomenclatura"],
+        respuesta: "El número de catastro es el identificador único de cada parcela en el registro municipal. Sirve para localizarla e identificarla oficialmente. 📌"
+      },
+      {
+        chip: "¿Cómo veo mis parcelas?",
+        claves: ["mis parcelas", "ver parcelas", "mis registros", "listado"],
+        respuesta: "Andá a la sección 'Mis Parcelas'. Ahí vas a ver únicamente las parcelas registradas a tu nombre. 👤"
+      },
+      {
+        chip: "¿Cómo cargo lat/long?",
+        claves: ["latitud", "longitud", "coordenadas", "lat", "long", "ubicacion"],
+        respuesta: "En el formulario de registro podés escribir las coordenadas a mano. Ejemplo para General Paz: Latitud -35.5533 y Longitud -58.3059. 🗺️"
+      },
+      {
+        chip: "¿Qué es un cuartel?",
+        claves: ["cuartel", "cuarteles", "division", "zona"],
+        respuesta: "Un cuartel es una subdivisión territorial del partido de General Paz. Se usa para organizar y agrupar las parcelas por sector. 📍"
+      },
+      {
+        chip: "📞 Contacto de la Municipalidad",
+        claves: ["contacto", "telefono", "direccion", "horario", "municipalidad", "ayuda", "comunicar"],
+        respuesta: "Podés contactar a la Municipalidad de General Paz:<br>📍 Obdulio Hernández Castro 2858<br>📞 2241 475364<br>🕗 Horario: 07:00 a 14:00 hs"
+      }
+    ];
+
+    const RESP_DEFECTO = "Mmm, no estoy seguro de eso. 🤔 Probá con una de estas preguntas frecuentes 👇 o contactá a la Municipalidad al 2241 475364.";
+
+    // Referencias del DOM
+    const fab = document.getElementById('chatFab');
+    const ventana = document.getElementById('chatVentana');
+    const cerrar = document.getElementById('chatCerrar');
+    const cuerpo = document.getElementById('chatCuerpo');
+    const chips = document.getElementById('chatChips');
+    const input = document.getElementById('chatInput');
+    const enviar = document.getElementById('chatEnviar');
+
+    let bienvenidaMostrada = false;
+
+    // Agrega un mensaje. 'texto' del bot puede tener HTML seguro (definido por nosotros);
+    // el texto del usuario se inserta como texto plano para evitar inyección.
+    function agregarMensaje(contenido, tipo) {
+      const div = document.createElement('div');
+      div.className = 'chat-msg ' + tipo;
+      if (tipo === 'bot') {
+        div.innerHTML = contenido; // contenido controlado por nosotros
+      } else {
+        div.textContent = contenido; // texto del usuario: seguro
+      }
+      cuerpo.appendChild(div);
+      cuerpo.scrollTop = cuerpo.scrollHeight;
+    }
+
+    function mostrarTyping() {
+      const t = document.createElement('div');
+      t.className = 'chat-typing';
+      t.id = 'chatTyping';
+      t.innerHTML = '<span></span><span></span><span></span>';
+      cuerpo.appendChild(t);
+      cuerpo.scrollTop = cuerpo.scrollHeight;
+    }
+    function quitarTyping() {
+      const t = document.getElementById('chatTyping');
+      if (t) t.remove();
+    }
+
+    // Normaliza texto (minúsculas, sin tildes) para comparar
+    function normalizar(txt) {
+      return (txt || '').toString().toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    }
+
+    // Busca la mejor respuesta según palabras clave
+    function buscarRespuesta(textoUsuario) {
+      const t = normalizar(textoUsuario);
+      let mejor = null;
+      let maxCoincidencias = 0;
+      BASE_CONOCIMIENTO.forEach(item => {
+        let cuenta = 0;
+        item.claves.forEach(clave => {
+          if (t.includes(normalizar(clave))) cuenta++;
+        });
+        if (cuenta > maxCoincidencias) {
+          maxCoincidencias = cuenta;
+          mejor = item;
+        }
+      });
+      return maxCoincidencias > 0 ? mejor.respuesta : RESP_DEFECTO;
+    }
+
+    // Responde con animación de "escribiendo..."
+    function responderBot(texto) {
+      mostrarTyping();
+      setTimeout(() => {
+        quitarTyping();
+        agregarMensaje(texto, 'bot');
+      }, 600);
+    }
+
+    // Procesa el envío del usuario
+    function procesarEnvio(texto) {
+      const limpio = texto.trim();
+      if (!limpio) return;
+      agregarMensaje(limpio, 'user');
+      input.value = '';
+      responderBot(buscarRespuesta(limpio));
+    }
+
+    // Genera los chips de preguntas rápidas
+    function generarChips() {
+      chips.innerHTML = '';
+      BASE_CONOCIMIENTO.forEach(item => {
+        const chip = document.createElement('button');
+        chip.className = 'chat-chip';
+        chip.textContent = item.chip;
+        chip.addEventListener('click', () => {
+          agregarMensaje(item.chip, 'user');
+          responderBot(item.respuesta);
+        });
+        chips.appendChild(chip);
+      });
+    }
+
+    // Abrir / cerrar
+    function abrirChat() {
+      ventana.classList.add('abierto');
+      if (!bienvenidaMostrada) {
+        setTimeout(() => {
+          agregarMensaje("¡Hola! 👋 Soy el asistente del SIAER. ¿En qué te puedo ayudar? Elegí una pregunta o escribime tu duda.", 'bot');
+        }, 300);
+        bienvenidaMostrada = true;
+      }
+      setTimeout(() => input.focus(), 300);
+    }
+    function cerrarChat() {
+      ventana.classList.remove('abierto');
+    }
+
+    // Eventos
+    fab.addEventListener('click', () => {
+      ventana.classList.contains('abierto') ? cerrarChat() : abrirChat();
+    });
+    cerrar.addEventListener('click', cerrarChat);
+    enviar.addEventListener('click', () => procesarEnvio(input.value));
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') procesarEnvio(input.value);
+    });
+
+    // Inicializar chips al cargar
+    generarChips();
+  })();
 </script>
 <?= $this->endSection() ?>

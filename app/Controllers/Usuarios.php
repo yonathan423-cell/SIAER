@@ -34,11 +34,8 @@ class Usuarios extends BaseController
     // Guardar usuario en la base de datos
     public function guardar()
     {
-        $validation = \Config\Services::validation();
-
         $rules = [
-            'nombre'   => 'required|min_length[3]',
-            'email'    => 'required|valid_email|is_unique[usuarios.email]',
+            'usuario'  => 'required|min_length[3]|is_unique[usuarios.usuario]',
             'password' => 'required|min_length[6]',
             'rol'      => 'required|in_list[admin,operador,cliente]'
         ];
@@ -48,10 +45,9 @@ class Usuarios extends BaseController
         }
 
         $this->usuarioModel->save([
-            'nombre'        => $this->request->getPost('nombre'),
-            'email'         => $this->request->getPost('email'),
-            'password_hash' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
-            'rol'           => strtolower($this->request->getPost('rol')),
+            'usuario'    => $this->request->getPost('usuario'),
+            'contrasena' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
+            'rol'        => strtolower($this->request->getPost('rol')),
         ]);
 
         return redirect()->to(base_url('usuarios'))->with('mensaje', 'Usuario creado correctamente.');
@@ -63,9 +59,8 @@ class Usuarios extends BaseController
         $id = $this->request->getPost('id');
 
         $rules = [
-            'nombre' => 'required|min_length[3]',
-            'email'  => "required|valid_email|is_unique[usuarios.email,id,{$id}]",
-            'rol'    => 'required|in_list[admin,operador,cliente]'
+            'usuario' => "required|min_length[3]|is_unique[usuarios.usuario,id,{$id}]",
+            'rol'     => 'required|in_list[admin,operador,cliente]'
         ];
 
         if (!$this->validate($rules)) {
@@ -73,10 +68,14 @@ class Usuarios extends BaseController
         }
 
         $data = [
-            'nombre' => $this->request->getPost('nombre'),
-            'email'  => $this->request->getPost('email'),
-            'rol'    => strtolower($this->request->getPost('rol')),
+            'usuario' => $this->request->getPost('usuario'),
+            'rol'     => strtolower($this->request->getPost('rol')),
         ];
+
+        // Si enviaron una nueva contraseña desde el modal, la actualizamos
+        if ($this->request->getPost('password')) {
+            $data['contrasena'] = password_hash($this->request->getPost('password'), PASSWORD_DEFAULT);
+        }
 
         $this->usuarioModel->update($id, $data);
 
@@ -86,6 +85,11 @@ class Usuarios extends BaseController
     // Eliminar usuario
     public function eliminar($id)
     {
+        // Evitar que el admin en sesión se elimine a sí mismo
+        if ((int)$id === (int)session()->get('usuario_id')) {
+            return redirect()->to(base_url('usuarios'))->with('error', 'No puedes eliminar tu propia cuenta.');
+        }
+
         $this->usuarioModel->delete($id);
         return redirect()->to(base_url('usuarios'))->with('mensaje', 'Usuario eliminado correctamente.');
     }
@@ -102,7 +106,7 @@ class Usuarios extends BaseController
             if (in_array($rol, ['admin', 'operador', 'cliente'])) {
                 
                 // Evita que el admin logueado se desgradúe a sí mismo por error
-                if ($id === (int) session()->get('id') && $rol !== 'admin') {
+                if ($id === (int) session()->get('usuario_id') && $rol !== 'admin') {
                     return $this->response->setJSON([
                         'success' => false, 
                         'mensaje' => 'No puedes quitarte el rol de Administrador a ti mismo.'

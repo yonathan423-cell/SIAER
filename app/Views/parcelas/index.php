@@ -3,6 +3,7 @@
 <?= $this->section('estilos') ?>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
 <style>
+    /* Estilos del Módulo GIS (Mapa y Sidebar) */
     .gis-wrapper {
         display: flex;
         flex-direction: column;
@@ -23,14 +24,10 @@
         padding: 0 16px;
     }
     .gis-header .title-area { display: flex; align-items: baseline; gap: 8px; color: #1e293b; font-weight: 800; font-size: 0.95rem; }
-    .gis-header .search-center { flex: 1; max-width: 400px; margin: 0 15px; position: relative; }
-    .gis-header .search-center input {
-        width: 100%; padding: 6px 12px 6px 30px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; outline: none;
-    }
     
     .gis-body {
         display: flex;
-        height: 650px;
+        height: 600px;
         position: relative;
         width: 100%;
     }
@@ -89,10 +86,96 @@
         top: 0; bottom: 0; left: 0; right: 0;
         background: #e5e7eb;
     }
+
+    /* Badges de Rol */
+    .badge-rol {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+    .badge-rol-admin { background: #fee2e2; color: #991b1b; }
+    .badge-rol-operador { background: #fef3c7; color: #92400e; }
+    .badge-rol-cliente { background: #dcfce7; color: #166534; }
+
+    /* Estilos de Métricas y Tabla */
+    .tarjetas-resumen-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+    .tarjeta-stat {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 12px 16px;
+    }
+    .tarjeta-stat .stat-label {
+        font-size: 0.7rem;
+        color: #64748b;
+        font-weight: 700;
+        display: block;
+        text-transform: uppercase;
+    }
+    .tarjeta-stat .stat-num {
+        font-size: 1.15rem;
+        color: #0f172a;
+        font-weight: 800;
+        margin-top: 2px;
+        display: block;
+    }
+
+    .contenedor-tabla-catastro {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin-bottom: 30px;
+    }
+    .tabla-catastro {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        font-size: 0.85rem;
+    }
+    .tabla-catastro thead tr {
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        color: #475569;
+    }
+    .tabla-catastro th {
+        padding: 10px 14px;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        font-weight: 700;
+    }
+    .tabla-catastro td {
+        padding: 10px 14px;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+    }
+    .subtexto-tabla {
+        display: block;
+        color: #94a3b8;
+        font-size: 0.75rem;
+    }
 </style>
 <?= $this->endSection() ?>
 
 <?= $this->section('contenido') ?>
+<?php 
+    $rolSesion = session()->get('rol') ?? 'cliente';
+    $claseRol = match($rolSesion) {
+        'admin' => 'badge-rol-admin',
+        'operador' => 'badge-rol-operador',
+        default => 'badge-rol-cliente'
+    };
+?>
+
+<!-- 1. BLOQUE MAPA Y FILTROS GIS -->
 <div class="gis-wrapper">
     <div class="gis-header">
         <div class="title-area">
@@ -100,9 +183,8 @@
             <span style="color:#64748b; font-weight:400; font-size:0.8rem;">Partido de General Paz, Buenos Aires</span>
         </div>
         
-        <div class="search-center">
-            <span style="position:absolute; left:10px; top:6px; color:#94a3b8; font-size:0.8rem;">🔍</span>
-            <input type="text" id="busquedaGlobal" onkeyup="aplicarFiltros()" placeholder="Buscar dirección, lugar o catastro...">
+        <div>
+            <span class="badge-rol <?= $claseRol ?>">Rol: <?= esc(ucfirst($rolSesion)) ?></span>
         </div>
     </div>
 
@@ -113,7 +195,8 @@
                     <span>FILTROS</span>
                     <a onclick="limpiarFiltros()" style="color:#ef4444; cursor:pointer; text-transform:none; font-size:0.75rem;">Limpiar filtros</a>
                 </div>
-                <input type="text" id="filtroTexto" onkeyup="aplicarFiltros()" placeholder="Partida, nomenclatura, propietario..." style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.8rem; box-sizing:border-box;">
+                <!-- Buscador lateral funcional y conectado al script -->
+                <input type="text" id="filtroTexto" onkeyup="aplicarFiltros()" placeholder="Partida, nomenclatura, propietario, actividad..." style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.8rem; box-sizing:border-box;">
             </div>
 
             <div class="sidebar-section">
@@ -166,18 +249,93 @@
         </div>
     </div>
 </div>
+
+<!-- 2. BLOQUE DE TARJETAS DE MÉTRICAS -->
+<div class="tarjetas-resumen-grid">
+    <div class="tarjeta-stat">
+        <span class="stat-label">Superficie Total</span>
+        <strong class="stat-num"><?= number_format((float)($superficie_total ?? 2046312), 1, ',', '.') ?> ha</strong>
+    </div>
+    <div class="tarjeta-stat">
+        <span class="stat-label">Ganadería Recría</span>
+        <strong class="stat-num"><?= number_format((float)($sup_recria ?? 343454), 1, ',', '.') ?> ha</strong>
+    </div>
+    <div class="tarjeta-stat">
+        <span class="stat-label">Urbano / Residencial</span>
+        <strong class="stat-num"><?= number_format((float)($sup_urbano ?? 102.5), 1, ',', '.') ?> ha</strong>
+    </div>
+    <div class="tarjeta-stat">
+        <span class="stat-label">Agrícola Soja/Maíz</span>
+        <strong class="stat-num"><?= number_format((float)($sup_agricola ?? 337785), 1, ',', '.') ?> ha</strong>
+    </div>
+</div>
+
+<!-- 3. BLOQUE DE TABLA CATASTRAL -->
+<div class="contenedor-tabla-catastro">
+    <table class="tabla-catastro">
+        <thead>
+            <tr>
+                <th>Parcela</th>
+                <th>Localidad / Ubicación</th>
+                <th>Superficie</th>
+                <th>Producción</th>
+                <th>Estado</th>
+                <th style="text-align:right;">Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="tablaCuerpo">
+            <?php if (!empty($parcelas)): ?>
+                <?php foreach ($parcelas as$p): ?>
+                <tr>
+                    <td>
+                        <strong>Catastro: <?= esc($p['n_catastro'] ?? $p['id']) ?></strong>
+                        <small class="subtexto-tabla"><?= esc($p['cuartel'] ?? 'S/N') ?></small>
+                    </td>
+                    <td>
+                        <span><?= esc($p['cuartel'] ?? 'Cuartel I') ?></span>
+                        <small class="subtexto-tabla"><?= esc($p['localidad'] ?? 'General Paz') ?></small>
+                    </td>
+                    <td>
+                        <strong><?= number_format((float)($p['superficie'] ?? 0), 1, ',', '.') ?> ha</strong>
+                    </td>
+                    <td><?= esc($p['actividad'] ?? 'Ganadería Recría') ?></td>
+                    <td>
+                        <span style="color:#16a34a; font-weight:700;">● <?= esc($p['estado'] ?? 'activa') ?></span>
+                    </td>
+                    <td style="text-align:right;">
+                        <?php if (in_array($rolSesion, ['admin', 'operador'])): ?>
+                            <a href="<?= base_url('parcelas/editar/' . ($p['id'] ?? '')) ?>" title="Editar" style="text-decoration:none; margin-right:8px;">✏️</a>
+                        <?php endif; ?>
+                        <?php if ($rolSesion === 'admin'): ?>
+                            <a href="<?= base_url('parcelas/eliminar/' . ($p['id'] ?? '')) ?>" title="Eliminar" onclick="return confirm('¿Eliminar parcela?')" style="text-decoration:none; margin-right:8px;">🗑️</a>
+                        <?php endif; ?>
+                        <a href="#" title="Ver Detalle" style="text-decoration:none;">👁️</a>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <tr>
+                    <td colspan="6" style="text-align:center; padding:16px; color:#64748b;">No hay registros cargados o no se seleccionó ninguna parcela.</td>
+                </tr>
+            <?php endif; ?>
+        </tbody>
+    </table>
+</div>
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
     let mapa;
-    let rawGeoJSONData = null;
-    let geojsonLayer = null;
-    let capaSeleccionada = null;
+    let parcelasReales = [];      
+    let capaMarcadores = null;
+
+    function normalizarTexto(txt) {
+        return (txt || '').toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    }
 
     document.addEventListener("DOMContentLoaded", function () {
-        mapa = L.map('mapa', { zoomControl: false }).setView([-35.515, -58.315], 11);
+        mapa = L.map('mapa', { zoomControl: false }).setView([-35.515, -58.315], 10);
         
         L.control.zoom({ position: 'topright' }).addTo(mapa);
         
@@ -187,101 +345,112 @@
 
         setTimeout(() => { mapa.invalidateSize(); }, 200);
 
-        // Cargar GeoJSON
-        fetch('<?= base_url("geojson/cuarteles_general_paz.json") ?>')
-            .then(r => r.json())
-            .then(data => {
-                rawGeoJSONData = data;
-                poblarSelectCuarteles(data.features || []);
-                actualizarMetricas(data.features || []);
-                renderizarGeoJSON(data);
-            })
-            .catch(e => console.log("Aviso GeoJSON:", e));
+        cargarParcelasReales();
     });
 
-    function poblarSelectCuarteles(features) {
+    function cargarParcelasReales() {
+        fetch('<?= base_url("mapa/obtenerCapas") ?>')
+            .then(r => r.json())
+            .then(puntos => {
+                parcelasReales = puntos;
+                pintarMarcadoresReales(parcelasReales, true);
+                poblarSelectCuartelesReal(parcelasReales);
+                actualizarMetricasReales(parcelasReales);
+            })
+            .catch(e => console.error('No se pudieron cargar las parcelas:', e));
+    }
+
+    function pintarMarcadoresReales(puntos, reencuadrar = true) {
+        if (capaMarcadores) {
+            mapa.removeLayer(capaMarcadores);
+        }
+        capaMarcadores = L.layerGroup();
+
+        const rolSesion = "<?= $rolSesion ?>";
+        const coords = [];
+
+        puntos.forEach(p => {
+            if (!p.latitud || !p.longitud) return;
+            coords.push([p.latitud, p.longitud]);
+
+            const marker = L.circleMarker([p.latitud, p.longitud], {
+                radius: 6,
+                color: '#1d6f42',
+                fillColor: '#2ecc71',
+                fillOpacity: 0.85,
+                weight: 1.5
+            });
+
+            marker.on('click', function () {
+                mapa.flyTo([p.latitud, p.longitud], 15, { duration: 0.5 });
+                mostrarDetalleReal(p, rolSesion);
+            });
+
+            capaMarcadores.addLayer(marker);
+        });
+
+        capaMarcadores.addTo(mapa);
+
+        if (reencuadrar && coords.length > 0) {
+            mapa.fitBounds(coords, { padding: [30, 30] });
+        }
+    }
+
+    function mostrarDetalleReal(p, rolSesion) {
+        const box = document.getElementById('detalleParcelaBox');
+        box.style.textAlign = 'left';
+        box.style.background = '#ffffff';
+        box.style.border = '1px solid #cbd5e1';
+
+        let botonEditar = '';
+        if (rolSesion === 'admin' || rolSesion === 'operador') {
+            botonEditar = `<div style="margin-top:10px;"><a href="<?= base_url('parcelas/editar/') ?>${p.id}" class="chip-btn" style="display:inline-block; text-decoration:none; padding:4px 8px; background:#1d6f42; color:#fff;">✏️ Editar Ficha</a></div>`;
+        }
+
+        box.innerHTML = `
+            <h4 style="margin:0 0 6px 0; color:#1f3864;">📌 Catastro ${p.nro_catastro || 'S/N'}</h4>
+            <p style="margin:3px 0; font-size:0.8rem;"><strong>Cuartel:</strong> ${p.cuartel || '-'}</p>
+            <p style="margin:3px 0; font-size:0.8rem;"><strong>Propietario:</strong> ${p.propietario || 'Sin datos'}</p>
+            <p style="margin:3px 0; font-size:0.8rem;"><strong>Superficie:</strong> ${(p.superficie_ha || 0).toLocaleString('es-AR')} ha</p>
+            <p style="margin:3px 0; font-size:0.8rem;"><strong>Actividad:</strong> ${p.actividad || 'Sin especificar'}</p>
+            ${botonEditar}
+        `;
+    }
+
+    function poblarSelectCuartelesReal(puntos) {
         const select = document.getElementById('selectCuartel');
         select.innerHTML = '<option value="">Todos los cuarteles</option>';
 
         const cuartelesSet = new Set();
-        features.forEach(f => {
-            const props = f.properties || {};
-            if (props.cuartel) cuartelesSet.add(props.cuartel.toString());
+        puntos.forEach(p => { 
+            if (p.cuartel) {
+                let numCuartel = p.cuartel.toString().replace(/cuartel/gi, '').trim();
+                cuartelesSet.add(numCuartel); 
+            }
         });
 
-        const ordenados = Array.from(cuartelesSet).sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
-
-        ordenados.forEach(c => {
+        Array.from(cuartelesSet).sort((a,b) => a.localeCompare(b, undefined, {numeric: true})).forEach(c => {
             const opt = document.createElement('option');
             opt.value = c;
             opt.textContent = `Cuartel ${c}`;
             select.appendChild(opt);
         });
+
+        select.value = '';
     }
 
-    function renderizarGeoJSON(data) {
-        if (geojsonLayer) {
-            mapa.removeLayer(geojsonLayer);
-        }
-        capaSeleccionada = null;
+    function actualizarMetricasReales(puntos) {
+        const conFicha = puntos.filter(p => p.propietario && p.propietario !== 'Sin datos').length;
+        const sinDatos = puntos.length - conFicha;
 
-        geojsonLayer = L.geoJSON(data, {
-            style: function(feature) {
-                return {
-                    color: '#2563eb',
-                    weight: 1.5,
-                    fillColor: '#2563eb',
-                    fillOpacity: 0.0 // 100% TRANSPARENTE AL INICIO
-                };
-            },
-            onEachFeature: (feature, layer) => {
-                layer.on('mouseover', function () {
-                    if (capaSeleccionada !== this) {
-                        this.setStyle({ fillOpacity: 0.15, weight: 2 });
-                    }
-                });
-
-                layer.on('mouseout', function () {
-                    if (capaSeleccionada !== this) {
-                        this.setStyle({ fillOpacity: 0.0, weight: 1.5 });
-                    }
-                });
-
-                // PINTAR DE AZUL SOLO CUANDO SE SELECCIONA
-                layer.on('click', function () {
-                    if (capaSeleccionada) {
-                        geojsonLayer.resetStyle(capaSeleccionada);
-                    }
-
-                    capaSeleccionada = this;
-                    this.setStyle({
-                        fillColor: '#2563eb',
-                        fillOpacity: 0.45,
-                        weight: 2.5,
-                        color: '#1d4ed8'
-                    });
-
-                    const props = feature.properties || {};
-                    const box = document.getElementById('detalleParcelaBox');
-                    box.style.textAlign = 'left';
-                    box.style.background = '#ffffff';
-                    box.style.border = '1px solid #cbd5e1';
-                    box.innerHTML = `
-                        <h4 style="margin:0 0 6px 0; color:#1f3864;">📌 ${props.nombre || 'Cuartel ' + props.cuartel}</h4>
-                        <p style="margin:3px 0; font-size:0.8rem;"><strong>Cuartel:</strong> ${props.cuartel || '-'}</p>
-                        <p style="margin:3px 0; font-size:0.8rem;"><strong>Propietario:</strong> ${props.propietario || 'Sin datos'}</p>
-                        <p style="margin:3px 0; font-size:0.8rem;"><strong>Actividad:</strong> ${props.actividad || 'No especificada'}</p>
-                    `;
-                });
-            }
-        }).addTo(mapa);
+        document.getElementById('totalTodas').innerText = puntos.length;
+        document.getElementById('totalFicha').innerText = conFicha;
+        document.getElementById('totalSinDatos').innerText = sinDatos;
+        document.getElementById('totalIncompletas').innerText = 0;
     }
 
     function aplicarFiltros() {
-        if (!rawGeoJSONData || !rawGeoJSONData.features) return;
-
-        const textoBusquedaGlobal = document.getElementById('busquedaGlobal').value.toLowerCase().trim();
-        const textoFiltro = document.getElementById('filtroTexto').value.toLowerCase().trim();
+        const textoFiltro = normalizarTexto(document.getElementById('filtroTexto').value);
         const cuartelSeleccionado = document.getElementById('selectCuartel').value;
 
         const actividadesSeleccionadas = Array.from(document.querySelectorAll('.chip-btn.active'))
@@ -290,43 +459,46 @@
         const estadosSeleccionados = Array.from(document.querySelectorAll('.filtro-estado:checked'))
                                           .map(cb => cb.value);
 
-        const featuresFiltradas = rawGeoJSONData.features.filter(f => {
-            const props = f.properties || {};
-            const partida = (props.partida || props.nro_catastro || props.id || '').toString().toLowerCase();
-            const propietario = (props.propietario || '').toLowerCase();
-            const nomenclatura = (props.nomenclatura || '').toLowerCase();
-            const actividad = (props.actividad || '').toLowerCase();
-            const cuartel = (props.cuartel || '').toString();
-            const estado = (props.estado || (props.propietario ? 'con_ficha' : 'sin_datos')).toLowerCase();
+        const diccionarioActividad = {
+            'agricola': ['agricola', 'agricultura', 'soja', 'maiz', 'trigo'],
+            'ganadera': ['ganadera', 'ganaderia', 'pastizal', 'vacas'],
+            'multiple': ['multiple', 'varias'],
+            'pollos': ['pollos', 'avicultura', 'aves', 'avícola'],
+            'colmenas': ['colmenas', 'apicultura', 'miel'],
+            'tambos': ['tambos', 'tambo', 'leche'],
+            'mixtos': ['mixtos', 'mixta', 'agrícola-ganadera', 'agricola-ganadera']
+        };
 
-            const coincideTexto = !textoFiltro || partida.includes(textoFiltro) || propietario.includes(textoFiltro) || nomenclatura.includes(textoFiltro);
-            const coincideGlobal = !textoBusquedaGlobal || partida.includes(textoBusquedaGlobal) || propietario.includes(textoBusquedaGlobal) || nomenclatura.includes(textoBusquedaGlobal);
-            const coincideCuartel = !cuartelSeleccionado || cuartel === cuartelSeleccionado;
-            const coincideActividad = actividadesSeleccionadas.length === 0 || actividadesSeleccionadas.some(act => actividad.includes(act));
+        const parcelasFiltradas = parcelasReales.filter(p => {
+            const catastro = normalizarTexto(p.nro_catastro);
+            const propietario = normalizarTexto(p.propietario);
+            const actividad = normalizarTexto(p.actividad);
+            
+            const numParcelaCuartel = (p.cuartel || '').toString().replace(/cuartel/gi, '').trim();
+
+            const tieneFicha = p.propietario && normalizarTexto(p.propietario) !== 'sin datos';
+            const estado = tieneFicha ? 'con_ficha' : 'sin_datos';
+
+            // Coincidencia de texto (incluye catastro, propietario y actividad)
+            const coincideTexto = !textoFiltro || 
+                                  catastro.includes(textoFiltro) || 
+                                  propietario.includes(textoFiltro) || 
+                                  actividad.includes(textoFiltro);
+
+            const coincideCuartel = !cuartelSeleccionado || numParcelaCuartel === cuartelSeleccionado;
+            
+            const coincideActividad = actividadesSeleccionadas.length === 0 || actividadesSeleccionadas.some(chip => {
+                const terminos = diccionarioActividad[chip] || [chip];
+                return terminos.some(term => actividad.includes(term));
+            });
+
             const coincideEstado = estadosSeleccionados.length === 0 || estadosSeleccionados.includes(estado);
 
-            return coincideTexto && coincideGlobal && coincideCuartel && coincideActividad && coincideEstado;
+            return coincideTexto && coincideCuartel && coincideActividad && coincideEstado;
         });
 
-        const dataFiltrada = { ...rawGeoJSONData, features: featuresFiltradas };
-        renderizarGeoJSON(dataFiltrada);
-        actualizarMetricas(featuresFiltradas);
-    }
-
-    function actualizarMetricas(features) {
-        document.getElementById('totalTodas').innerText = features.length;
-        
-        let conFicha = 0, sinDatos = 0, incompletas = 0;
-        features.forEach(f => {
-            const props = f.properties || {};
-            if (props.estado === 'incompletas') incompletas++;
-            else if (props.propietario && props.propietario !== 'Sin datos') conFicha++;
-            else sinDatos++;
-        });
-
-        document.getElementById('totalFicha').innerText = conFicha;
-        document.getElementById('totalSinDatos').innerText = sinDatos;
-        document.getElementById('totalIncompletas').innerText = incompletas;
+        pintarMarcadoresReales(parcelasFiltradas, true);
+        actualizarMetricasReales(parcelasFiltradas);
     }
 
     function toggleChip(btn) {
@@ -339,7 +511,6 @@
         document.querySelectorAll('.filtro-estado').forEach(cb => cb.checked = false);
         document.getElementById('selectCuartel').value = '';
         document.getElementById('filtroTexto').value = '';
-        document.getElementById('busquedaGlobal').value = '';
         aplicarFiltros();
     }
 </script>

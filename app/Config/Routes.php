@@ -4,15 +4,27 @@ use CodeIgniter\Router\RouteCollection;
 
 /** @var RouteCollection $routes */
 
-// Rutas Públicas / Inicio
-$routes->get('/', 'Home::index');
+// =========================================================================
+// RUTA RAÍZ (CARGA EL HOME SI HAY SESIÓN, O REDIRIGE AL LOGIN)
+// =========================================================================
+$routes->get('/', static function() {
+    if (session()->get('isLoggedIn')) {
+        return view('home'); // Carga tu archivo home.php de la carpeta Views
+    }
+    return redirect()->to(base_url('login'));
+});
 
-// Rutas de Autenticación
+// =========================================================================
+// RUTAS DE AUTENTICACIÓN
+// =========================================================================
 $routes->get('login', 'Auth::login');
-$routes->post('login/procesar', 'Auth::procesarLogin');
+$routes->post('login', 'Auth::procesarLogin');            
+$routes->post('login/procesar', 'Auth::procesarLogin');   
 $routes->get('logout', 'Auth::logout');
 
-// Rutas Exclusivas para ADMINISTRADOR
+// =========================================================================
+// RUTAS EXCLUSIVAS PARA ADMINISTRADOR
+// =========================================================================
 $routes->group('', ['filter' => 'role:admin'], static function ($routes) {
     // Panel de Control
     $routes->get('dashboard', 'Dashboard::index');
@@ -28,15 +40,24 @@ $routes->group('', ['filter' => 'role:admin'], static function ($routes) {
     
     // Endpoint AJAX para cambio rápido de rol sin recargar página
     $routes->post('usuarios/actualizar-rol', 'Usuarios::actualizarRol');
+    $routes->post('usuarios/cambiarRol', 'Usuarios::actualizarRol'); // Alias de compatibilidad
 });
 
-// Rutas Lectura del Mapa (Acceso para ADMIN, OPERADOR y CLIENTE)
+// =========================================================================
+// RUTAS LECTURA DEL MAPA (ADMIN, OPERADOR Y CLIENTE)
+// =========================================================================
 $routes->group('', ['filter' => 'role:admin,operador,cliente'], static function ($routes) {
     $routes->get('parcelas', 'Parcelas::index');
     $routes->get('parcelas/mapaJson', 'Parcelas::mapaJson');
+    $routes->get('parcelas/ver/(:num)', 'Parcelas::ver/$1');   // 👈 NUEVA: detalle de parcela
+
+    // Alias para que el fetch('mapa/obtenerCapas') funcione directo:
+    $routes->get('mapa/obtenerCapas', 'Parcelas::mapaJson');
 });
 
-// Rutas de Edición/Escritura (Exclusivas para ADMIN y OPERADOR)
+// =========================================================================
+// RUTAS DE EDICIÓN/ESCRITURA (ADMIN Y OPERADOR)
+// =========================================================================
 $routes->group('', ['filter' => 'role:admin,operador'], static function ($routes) {
     $routes->get('parcelas/crear', 'Parcelas::crear');
     $routes->post('parcelas/guardar', 'Parcelas::guardar');
@@ -45,7 +66,10 @@ $routes->group('', ['filter' => 'role:admin,operador'], static function ($routes
     $routes->get('parcelas/eliminar/(:num)', 'Parcelas::eliminar/$1');
 });
 
-// Rutas Exclusivas para CLIENTE
+// =========================================================================
+// RUTAS EXCLUSIVAS PARA CLIENTE
+// =========================================================================
 $routes->group('', ['filter' => 'role:cliente'], static function ($routes) {
-    $routes->get('mis-parcelas', 'ClienteController::index');
+    $routes->get('mis-parcelas', 'Parcelas::misParcelas');
+    $routes->get('parcelas/mis-parcelas', 'Parcelas::misParcelas');
 });

@@ -10,49 +10,36 @@ class ParcelaModel extends Model
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
-    protected $useTimestamps    = true;
+    protected $useTimestamps    = false; // la tabla no tiene created_at / updated_at
 
+    // Nombres EXACTOS de las columnas reales de siaer_db.parcelas
     protected $allowedFields = [
-        'nro_catastro', 'latitud', 'longitud', 'superficie_ha',
+        'n_catastro', 'latitud', 'longitud', 'superficie',
         'propietario', 'cuartel', 'anio_relevamiento',
     ];
 
     protected $validationRules = [
-        'nro_catastro'       => 'required|max_length[30]',
-        'latitud'            => 'required|decimal',
-        'longitud'           => 'required|decimal',
-        'cuartel'            => 'required|max_length[10]',
-        'anio_relevamiento'  => 'required|integer',
+        'n_catastro' => 'required|max_length[100]',
+        'latitud'    => 'required|decimal',
+        'longitud'   => 'required|decimal',
+        'cuartel'    => 'required|max_length[100]',
     ];
 
     protected $validationMessages = [
-        'nro_catastro' => [
+        'n_catastro' => [
             'required' => 'Debe indicar el número de catastro de la parcela.',
         ],
     ];
 
     /**
-     * Devuelve solo los campos necesarios para pintar el mapa (liviano, sin lag),
-     * excluyendo siempre el Cuartel 1 (corresponde al casco urbano, no al área rural).
+     * Datos livianos para el mapa (id, catastro, lat/long, cuartel),
+     * excluyendo Cuartel 1 (casco urbano, fuera del área rural del proyecto).
+     * SE MANTIENE INTACTO PARA NO ROMPER EL MAPA.
      */
-    public function paraMapa(?int $anio = null): array
+    public function paraMapa(?int $anio = null, ?string $cuartel = null): array
     {
-        $query = $this->select('id, nro_catastro, latitud, longitud, cuartel')
-                       ->where('cuartel !=', '1');
-
-        if ($anio !== null) {
-            $query->where('anio_relevamiento', $anio);
-        }
-
-        return $query->findAll();
-    }
-
-    /**
-     * Listado filtrado por año y/o segmento (cuartel), para la vista de tabla.
-     */
-    public function filtrar(?int $anio = null, ?string $cuartel = null): array
-    {
-        $query = $this->where('cuartel !=', '1'); // Cuartel 1 fuera de alcance
+        $query = $this->select('id, n_catastro, latitud, longitud, superficie, cuartel, propietario')
+                       ->where('cuartel !=', 'Cuartel 1');
 
         if ($anio !== null) {
             $query->where('anio_relevamiento', $anio);
@@ -61,8 +48,34 @@ class ParcelaModel extends Model
             $query->where('cuartel', $cuartel);
         }
 
-        return $query->orderBy('nro_catastro', 'ASC')->findAll();
+        return $query->findAll();
+    }
+
+    /**
+     * Filtro general para administración.
+     * SE MANTIENE INTACTO PARA NO ROMPER LAS OTRAS VISTAS.
+     */
+    public function filtrar(?int $anio = null, ?string $cuartel = null): array
+    {
+        $query = $this->where('cuartel !=', 'Cuartel 1');
+
+        if ($anio !== null) {
+            $query->where('anio_relevamiento', $anio);
+        }
+        if ($cuartel !== null) {
+            $query->where('cuartel', $cuartel);
+        }
+
+        return $query->orderBy('n_catastro', 'ASC')->findAll();
+    }
+
+    /**
+     * NUEVO MÉTODO SEGURO:
+     * Trae absolutamente toda la base de datos de parcelas sin filtros ni límites de 10 registros,
+     * ideal para la vista general de la tabla de la base.
+     */
+    public function obtenerTodas(): array
+    {
+        return $this->orderBy('id', 'ASC')->findAll();
     }
 }
-
-

@@ -20,32 +20,34 @@ class Auth extends BaseController
 
     public function procesarLogin()
     {
-        $email    = $this->request->getPost('email');
-        $password = $this->request->getPost('password');
+        // Capturamos el email y contraseña del formulario
+        $email    = $this->request->getPost('usuario') ?? $this->request->getPost('email');
+        $password = $this->request->getPost('password') ?? $this->request->getPost('contrasena');
 
+        // Buscamos por la columna 'email' real de la base de datos
         $usuario = $this->usuarioModel->where('email', $email)->first();
 
-        if (! $usuario || ! password_verify($password, $usuario['password_hash'])) {
+        if (! $usuario || ! password_verify($password, $usuario['contrasena'])) {
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'Email o contraseña incorrectos.');
         }
 
-        // Normalizamos el rol a minúsculas por seguridad de comparación
         $rol = strtolower($usuario['rol']);
 
-        // Guardamos las claves en la sesión
+        // Guardamos en la sesión
         session()->set([
             'usuario_id' => $usuario['id'],
-            'usuario'    => $usuario['nombre'],
+            'usuario'    => $usuario['nombre'], // mostramos el nombre completo
+            'email'      => $usuario['email'],
             'rol'        => $rol,
             'isLoggedIn' => true,
         ]);
 
-        // Redirección inteligente según el rol ingresado
+        // Redirección por rol
         switch ($rol) {
             case 'admin':
-                $destino = '/'; 
+                $destino = '/parcelas'; 
                 break;
 
             case 'operador':
@@ -57,11 +59,10 @@ class Auth extends BaseController
                 break;
 
             default:
-                $destino = '/';
+                $destino = '/parcelas';
                 break;
         }
 
-        // Mensaje limpio sin repetir el rol de forma extraña
         return redirect()->to(base_url($destino))
             ->with('mensaje', '¡Hola, ' . $usuario['nombre'] . '! Que tengas una buena jornada.');
     }

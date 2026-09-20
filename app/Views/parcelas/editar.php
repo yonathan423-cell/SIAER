@@ -151,34 +151,34 @@
         <input type="hidden" name="volver" value="<?= esc(base_url('parcelas') . (isset($_GET) && $_GET ? '?' . http_build_query($_GET) : '')) ?>">
 
         <label>Nº de catastro 
-            <input type="text" name="nro_catastro" value="<?= esc($parcela['nro_catastro']) ?>" required>
+            <input type="text" name="n_catastro" value="<?= esc($parcela['n_catastro'] ?? $parcela['nro_catastro'] ?? '') ?>" required>
         </label>
 
         <div class="coords-grid">
             <label>Latitud 📍
-                <input type="text" name="latitud" id="latitud" value="<?= esc($parcela['latitud']) ?>" required readonly style="background-color: #f8fafc;">
+                <input type="text" name="latitud" id="latitud" value="<?= esc($parcela['latitud'] ?? '') ?>" required readonly style="background-color: #f8fafc;">
             </label>
 
             <label>Longitud 📍
-                <input type="text" name="longitud" id="longitud" value="<?= esc($parcela['longitud']) ?>" required readonly style="background-color: #f8fafc;">
+                <input type="text" name="longitud" id="longitud" value="<?= esc($parcela['longitud'] ?? '') ?>" required readonly style="background-color: #f8fafc;">
             </label>
         </div>
 
         <label>Superficie (ha) 
-            <input type="text" name="superficie_ha" value="<?= esc($parcela['superficie_ha']) ?>">
+            <input type="text" name="superficie_ha" value="<?= esc($parcela['superficie_ha'] ?? '') ?>">
         </label>
 
         <label>Propietario 
-            <input type="text" name="propietario" value="<?= esc($parcela['propietario']) ?>">
+            <input type="text" name="propietario" value="<?= esc($parcela['propietario'] ?? '') ?>">
         </label>
 
         <label>Cuartel 
             <select name="cuartel" required>
                 <?php 
                 $cuarteles = [2 => 'Cuartel 2 (Prioritario)', 8 => 'Cuartel 8 (Prioritario)', 1 => 'Cuartel 1', 3 => 'Cuartel 3', 4 => 'Cuartel 4', 5 => 'Cuartel 5', 6 => 'Cuartel 6', 7 => 'Cuartel 7'];
-                foreach ($cuarteles as $val => $texto): 
+                foreach ($cuarteles as $val =>$texto): 
                 ?>
-                    <option value="<?= $val ?>" <?= ((string)$parcela['cuartel'] === (string)$val) ? 'selected' : '' ?>><?= $texto ?></option>
+                    <option value="<?= $val ?>" <?= ((string)($parcela['cuartel'] ?? '') === (string)$val) ? 'selected' : '' ?>><?=$texto ?></option>
                 <?php endforeach; ?>
             </select>
         </label>
@@ -187,9 +187,9 @@
             <select name="anio_relevamiento" required>
                 <?php 
                 $anios = [2026, 2025, 2024, 2023];
-                foreach ($anios as $a): 
+                foreach ($anios as$a): 
                 ?>
-                    <option value="<?= $a ?>" <?= ((string)$parcela['anio_relevamiento'] === (string)$a) ? 'selected' : '' ?>><?= $a ?></option>
+                    <option value="<?= $a ?>" <?= ((string)($parcela['anio_relevamiento'] ?? '') === (string)$a) ? 'selected' : '' ?>><?=$a ?></option>
                 <?php endforeach; ?>
             </select>
         </label>
@@ -227,30 +227,16 @@
         attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // 3. Cargar capas de cuarteles en el fondo
-    fetch('<?= base_url('parcelas/mapaJson') ?>')
-        .then(response => response.json())
-        .then(data => {
-            L.geoJSON(data, {
-                style: {
-                    color: '#1f3864',
-                    weight: 1.5,
-                    fillOpacity: 0.1
-                }
-            }).addTo(map);
-        })
-        .catch(err => console.error('Error cargando capa GeoJSON:', err));
-
     let marcador;
 
-    // 4. Si ya existían coordenadas, ubicar el pin inicial
+    // 3. Si ya existían coordenadas, ubicar el pin inicial
     if (tieneCoords) {
         marcador = L.marker(centro).addTo(map)
-            .bindPopup('<b>Ubicación actual</b><br>Catastro: <?= esc($parcela['nro_catastro']) ?>')
+            .bindPopup('<b>Ubicación actual</b><br>Catastro: <?= esc($parcela['n_catastro'] ?? $parcela['nro_catastro'] ?? '') ?>')
             .openPopup();
     }
 
-    // 5. Al hacer clic en el mapa, reubicar la parcela y actualizar inputs
+    // 4. Al hacer clic en el mapa, reubicar la parcela y actualizar inputs
     map.on('click', function(e) {
         const lat = e.latlng.lat.toFixed(6);
         const lng = e.latlng.lng.toFixed(6);
