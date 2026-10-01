@@ -18,9 +18,11 @@ class Parcelas extends BaseController
         $anio    = $this->request->getGet('anio');
         $cuartel = $this->request->getGet('cuartel');
 
-        // Solo traemos la actividad de explotaciones sin invocar columnas que no existen
+        // Traemos la actividad de explotaciones.
+        // MAX() + groupBy evita que una parcela con VARIAS explotaciones
+        // aparezca duplicada en la tabla.
         $builder = $this->parcelaModel
-            ->select('parcelas.*, explotaciones.tipo_de_actividad')
+            ->select('parcelas.*, MAX(explotaciones.tipo_de_actividad) AS tipo_de_actividad')
             ->join('explotaciones', 'explotaciones.id_parcelas = parcelas.id', 'left');
 
         // 👇 Excluimos el Cuartel 1 (no es un cuartel tenido en cuenta)
@@ -37,6 +39,9 @@ class Parcelas extends BaseController
             $builder = $builder->orderBy("FIELD(parcelas.cuartel, '2', '8') DESC", '', false)
                                ->orderBy('parcelas.id', 'ASC');
         }
+
+        // 👇 Una fila por parcela (mata los duplicados del JOIN)
+        $builder = $builder->groupBy('parcelas.id');
 
         $parcelas = $builder->findAll();
 
@@ -68,12 +73,14 @@ class Parcelas extends BaseController
         $usuarioLogueado = session()->get('usuario');
 
         $parcelas = $this->parcelaModel
-            ->select('parcelas.*, explotaciones.tipo_de_actividad')
+            ->select('parcelas.*, MAX(explotaciones.tipo_de_actividad) AS tipo_de_actividad')
             ->join('explotaciones', 'explotaciones.id_parcelas = parcelas.id', 'left')
             ->where('parcelas.propietario', $usuarioLogueado)
             // 👇 Excluimos el Cuartel 1 (no es un cuartel tenido en cuenta)
             ->where('parcelas.cuartel !=', 'Cuartel 1')
             ->where('parcelas.cuartel !=', '1')
+            // 👇 Una fila por parcela (mata los duplicados del JOIN)
+            ->groupBy('parcelas.id')
             ->findAll();
 
         foreach ($parcelas as &$p) {
@@ -179,7 +186,7 @@ class Parcelas extends BaseController
         $cuartel = $this->request->getGet('cuartel');
 
         $builder = $this->parcelaModel
-            ->select('parcelas.*, explotaciones.tipo_de_actividad')
+            ->select('parcelas.*, MAX(explotaciones.tipo_de_actividad) AS tipo_de_actividad')
             ->join('explotaciones', 'explotaciones.id_parcelas = parcelas.id', 'left');
 
         // 👇 Excluimos el Cuartel 1 (no es un cuartel tenido en cuenta)
@@ -195,6 +202,9 @@ class Parcelas extends BaseController
         } else {
             $builder = $builder->orderBy("FIELD(parcelas.cuartel, '2', '8') DESC", '', false);
         }
+
+        // 👇 Una fila por parcela (mata los duplicados del JOIN)
+        $builder = $builder->groupBy('parcelas.id');
 
         $parcelas = $builder->findAll();
 
@@ -213,10 +223,12 @@ class Parcelas extends BaseController
 
         // ===================================================================
         // TAMBOS reales desde la tabla "tambos" (id, productor, latitud, longitud)
+        // DISTINCT para que no se repitan si hubiera filas duplicadas.
         // ===================================================================
         $db = \Config\Database::connect();
         $tambos = $db->table('tambos')
             ->select('id, productor, latitud, longitud')
+            ->distinct()
             ->get()
             ->getResultArray();
 
