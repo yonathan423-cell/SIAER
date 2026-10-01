@@ -40,6 +40,7 @@
         display: flex;
         flex-direction: column;
         overflow-y: auto;
+        overflow-x: hidden;
         padding: 14px;
         gap: 12px;
         box-sizing: border-box;
@@ -73,6 +74,26 @@
 
     .info-box { background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 12px; text-align: center; color: #64748b; font-size: 0.8rem; }
 
+    /* --- FIX: que el número de catastro largo NO se desborde del panel lateral --- */
+    #detalleParcelaBox {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    #detalleParcelaBox h4 {
+        font-size: 0.82rem;
+        line-height: 1.35;
+        margin: 0 0 6px 0;
+        word-break: break-all;
+        overflow-wrap: anywhere;
+    }
+    #detalleParcelaBox p {
+        word-break: break-word;
+        overflow-wrap: anywhere;
+    }
+    /* --- FIN FIX --- */
+
     .gis-map-container {
         flex: 1;
         position: relative;
@@ -86,6 +107,11 @@
         top: 0; bottom: 0; left: 0; right: 0;
         background: #e5e7eb;
     }
+
+    /* Viñeta/popup del mapa */
+    .popup-parcela { font-size: 0.82rem; line-height: 1.45; min-width: 180px; }
+    .popup-parcela .popup-titulo { color: #1f3864; font-weight: 800; display: block; margin-bottom: 5px; word-break: break-all; }
+    .popup-parcela .popup-dato { margin: 2px 0; }
 
     /* Badges de Rol */
     .badge-rol {
@@ -195,7 +221,6 @@
                     <span>FILTROS</span>
                     <a onclick="limpiarFiltros()" style="color:#ef4444; cursor:pointer; text-transform:none; font-size:0.75rem;">Limpiar filtros</a>
                 </div>
-                <!-- Buscador lateral funcional y conectado al script -->
                 <input type="text" id="filtroTexto" onkeyup="aplicarFiltros()" placeholder="Partida, nomenclatura, propietario, actividad..." style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.8rem; box-sizing:border-box;">
             </div>
 
@@ -285,7 +310,7 @@
         </thead>
         <tbody id="tablaCuerpo">
             <?php if (!empty($parcelas)): ?>
-                <?php foreach ($parcelas as$p): ?>
+                <?php foreach ($parcelas as $p): ?>
                 <tr>
                     <td>
                         <strong>Catastro: <?= esc($p['n_catastro'] ?? $p['id']) ?></strong>
@@ -334,6 +359,13 @@
         return (txt || '').toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
     }
 
+    // Escapa texto para meterlo seguro dentro del HTML del popup
+    function esc(txt) {
+        return (txt == null ? '' : txt.toString())
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
         mapa = L.map('mapa', { zoomControl: false }).setView([-35.515, -58.315], 10);
         
@@ -360,6 +392,19 @@
             .catch(e => console.error('No se pudieron cargar las parcelas:', e));
     }
 
+    // Arma el HTML de la viñeta/popup de un punto
+    function armarPopup(p) {
+        return `
+            <div class="popup-parcela">
+                <span class="popup-titulo">📌 Catastro ${esc(p.nro_catastro || 'S/N')}</span>
+                <div class="popup-dato"><strong>Cuartel:</strong> ${esc(p.cuartel || '-')}</div>
+                <div class="popup-dato"><strong>Propietario:</strong> ${esc(p.propietario || 'Sin datos')}</div>
+                <div class="popup-dato"><strong>Superficie:</strong> ${(p.superficie_ha || 0).toLocaleString('es-AR')} ha</div>
+                <div class="popup-dato"><strong>Actividad:</strong> ${esc(p.actividad || 'Sin especificar')}</div>
+            </div>
+        `;
+    }
+
     function pintarMarcadoresReales(puntos, reencuadrar = true) {
         if (capaMarcadores) {
             mapa.removeLayer(capaMarcadores);
@@ -381,9 +426,12 @@
                 weight: 1.5
             });
 
+            // 👇 NUEVO: viñeta/popup con la info sobre el mapa
+            marker.bindPopup(armarPopup(p));
+
             marker.on('click', function () {
                 mapa.flyTo([p.latitud, p.longitud], 15, { duration: 0.5 });
-                mostrarDetalleReal(p, rolSesion);
+                mostrarDetalleReal(p, rolSesion);  // también llena el panel lateral
             });
 
             capaMarcadores.addLayer(marker);
@@ -479,7 +527,6 @@
             const tieneFicha = p.propietario && normalizarTexto(p.propietario) !== 'sin datos';
             const estado = tieneFicha ? 'con_ficha' : 'sin_datos';
 
-            // Coincidencia de texto (incluye catastro, propietario y actividad)
             const coincideTexto = !textoFiltro || 
                                   catastro.includes(textoFiltro) || 
                                   propietario.includes(textoFiltro) || 

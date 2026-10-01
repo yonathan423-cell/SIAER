@@ -175,6 +175,11 @@ class Parcelas extends BaseController
             ->select('parcelas.*, explotaciones.tipo_de_actividad')
             ->join('explotaciones', 'explotaciones.id_parcelas = parcelas.id', 'left');
 
+        // 👇 NUEVO: excluimos el Cuartel 1 (casco urbano, fuera del área rural del proyecto)
+        //    Cubrimos los dos formatos posibles: 'Cuartel 1' y '1'
+        $builder = $builder->where('parcelas.cuartel !=', 'Cuartel 1')
+                           ->where('parcelas.cuartel !=', '1');
+
         if ($anio) {
             $builder = $builder->where('parcelas.anio_relevamiento', (int) $anio);
         }
@@ -199,6 +204,32 @@ class Parcelas extends BaseController
                 'actividad'     => $p['tipo_de_actividad'] ?? $p['actividad'] ?? 'Sin especificar',
             ];
         }, $parcelas);
+
+        // ===================================================================
+        // TAMBOS reales desde la tabla "tambos" (id, productor, latitud, longitud)
+        // ===================================================================
+        $db = \Config\Database::connect();
+        $tambos = $db->table('tambos')
+            ->select('id, productor, latitud, longitud')
+            ->get()
+            ->getResultArray();
+
+        foreach ($tambos as $t) {
+            if (empty($t['latitud']) || empty($t['longitud'])) {
+                continue;
+            }
+
+            $puntos[] = [
+                'id'            => 'tambo-' . $t['id'],
+                'latitud'       => (float) $t['latitud'],
+                'longitud'      => (float) $t['longitud'],
+                'nro_catastro'  => 'Tambo #' . $t['id'],
+                'cuartel'       => 'Sin asignar',
+                'propietario'   => $t['productor'] ?: 'Sin datos',
+                'superficie_ha' => 0,
+                'actividad'     => 'Tambos',
+            ];
+        }
 
         return $this->response->setJSON($puntos);
     }
