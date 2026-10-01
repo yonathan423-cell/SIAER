@@ -21,6 +21,7 @@ $routes->get('login', 'Auth::login');
 $routes->post('login', 'Auth::procesarLogin');            
 $routes->post('login/procesar', 'Auth::procesarLogin');   
 $routes->get('logout', 'Auth::logout');
+$routes->get('tambos', 'Tambos::mapa');
 
 // =========================================================================
 // RUTAS EXCLUSIVAS PARA ADMINISTRADOR
