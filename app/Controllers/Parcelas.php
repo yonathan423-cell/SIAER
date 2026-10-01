@@ -23,6 +23,10 @@ class Parcelas extends BaseController
             ->select('parcelas.*, explotaciones.tipo_de_actividad')
             ->join('explotaciones', 'explotaciones.id_parcelas = parcelas.id', 'left');
 
+        // 👇 Excluimos el Cuartel 1 (no es un cuartel tenido en cuenta)
+        $builder = $builder->where('parcelas.cuartel !=', 'Cuartel 1')
+                           ->where('parcelas.cuartel !=', '1');
+
         if ($anio) {
             $builder = $builder->where('parcelas.anio_relevamiento', (int) $anio);
         }
@@ -67,6 +71,9 @@ class Parcelas extends BaseController
             ->select('parcelas.*, explotaciones.tipo_de_actividad')
             ->join('explotaciones', 'explotaciones.id_parcelas = parcelas.id', 'left')
             ->where('parcelas.propietario', $usuarioLogueado)
+            // 👇 Excluimos el Cuartel 1 (no es un cuartel tenido en cuenta)
+            ->where('parcelas.cuartel !=', 'Cuartel 1')
+            ->where('parcelas.cuartel !=', '1')
             ->findAll();
 
         foreach ($parcelas as &$p) {
@@ -175,8 +182,7 @@ class Parcelas extends BaseController
             ->select('parcelas.*, explotaciones.tipo_de_actividad')
             ->join('explotaciones', 'explotaciones.id_parcelas = parcelas.id', 'left');
 
-        // 👇 NUEVO: excluimos el Cuartel 1 (casco urbano, fuera del área rural del proyecto)
-        //    Cubrimos los dos formatos posibles: 'Cuartel 1' y '1'
+        // 👇 Excluimos el Cuartel 1 (no es un cuartel tenido en cuenta)
         $builder = $builder->where('parcelas.cuartel !=', 'Cuartel 1')
                            ->where('parcelas.cuartel !=', '1');
 
