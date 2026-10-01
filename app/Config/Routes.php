@@ -2,22 +2,16 @@
 
 use CodeIgniter\Router\RouteCollection;
 
-/** @var RouteCollection $routes */
+/**
+ * @var RouteCollection $routes
+ */
 
-// =========================================================================
-// RUTA RAÍZ (CARGA EL HOME SI HAY SESIÓN, O REDIRIGE AL LOGIN)
-// =========================================================================
-$routes->get('/', static function() {
-    if (session()->get('isLoggedIn')) {
-        return view('home'); // Carga tu archivo home.php de la carpeta Views
-    }
-    return redirect()->to(base_url('login'));
-});
+// Ruta raíz → Home
+$routes->get('/', 'Home::index');
 
-// =========================================================================
-// RUTAS DE AUTENTICACIÓN
-// =========================================================================
+// Login
 $routes->get('login', 'Auth::login');
+ login
 $routes->post('login', 'Auth::procesarLogin');            
 $routes->post('login/procesar', 'Auth::procesarLogin');   
 $routes->get('logout', 'Auth::logout');
@@ -74,3 +68,17 @@ $routes->group('', ['filter' => 'role:cliente'], static function ($routes) {
     $routes->get('mis-parcelas', 'Parcelas::misParcelas');
     $routes->get('parcelas/mis-parcelas', 'Parcelas::misParcelas');
 });
+
+$routes->post('login', 'Auth::attemptLogin');
+
+// Parcelas
+$routes->get('parcelas', 'Parcelas::index');
+$routes->get('parcelas/crear', 'Parcelas::crear');
+$routes->post('parcelas/guardar', 'Parcelas::guardar');
+$routes->get('parcelas/editar/(:num)', 'Parcelas::editar/$1');
+$routes->post('parcelas/actualizar/(:num)', 'Parcelas::actualizar/$1');
+$routes->get('parcelas/eliminar/(:num)', 'Parcelas::eliminar/$1');
+
+// Mapa JSON
+$routes->get('parcelas/mapaJson', 'Parcelas::mapaJson');
+ main

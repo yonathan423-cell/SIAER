@@ -1,5 +1,9 @@
 <?= $this->extend('layout/base') ?>
 
+<<<<<<< HEAD
+<?= $this->section('contenido') ?>
+<h1>Editar parcela</h1>
+=======
 <?= $this->section('estilos') ?>
 <!-- Leaflet CSS para el mapa interactivo -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -136,6 +140,7 @@
 <?= $this->section('contenido') ?>
 <h1 style="color: #1f3864; margin-bottom: 5px;">Editar parcela</h1>
 <p style="color: #64748b; margin-top: 0; font-size: 0.9rem;">Podés hacer clic en el mapa si querés reubicar las coordenadas de la parcela.</p>
+>>>>>>> login
 
 <?php if (session()->getFlashdata('errores')): ?>
     <ul class="alerta alerta--error">
@@ -145,6 +150,21 @@
     </ul>
 <?php endif; ?>
 
+<<<<<<< HEAD
+<form method="post" action="<?= base_url('parcelas/editar/' . (int) $parcela['id']) ?>">
+    <input type="hidden" name="volver" value="<?= esc(base_url('parcelas') . (isset($_GET) && $_GET ? '?' . http_build_query($_GET) : '')) ?>">
+    <label>Nº de catastro <input type="text" name="nro_catastro" value="<?= esc($parcela['nro_catastro']) ?>" required></label><br>
+    <label>Latitud <input type="text" name="latitud" value="<?= esc($parcela['latitud']) ?>" required></label><br>
+    <label>Longitud <input type="text" name="longitud" value="<?= esc($parcela['longitud']) ?>" required></label><br>
+    <label>Superficie (ha) <input type="text" name="superficie_ha" value="<?= esc($parcela['superficie_ha']) ?>"></label><br>
+    <label>Propietario <input type="text" name="propietario" value="<?= esc($parcela['propietario']) ?>"></label><br>
+    <label>Cuartel <input type="text" name="cuartel" value="<?= esc($parcela['cuartel']) ?>" required></label><br>
+    <label>Año de relevamiento <input type="number" name="anio_relevamiento" value="<?= esc($parcela['anio_relevamiento']) ?>" required></label><br>
+    <button type="submit">Guardar cambios</button>
+    <a href="<?= base_url('parcelas') ?>">Cancelar</a>
+</form>
+<?= $this->endSection() ?>
+=======
 <div class="grid-container">
     <!-- Formulario de edición -->
     <form class="form-parcela" method="post" action="<?= base_url('parcelas/editar/' . (int) $parcela['id']) ?>">
@@ -254,3 +274,4 @@
     });
 </script>
 <?= $this->endSection() ?>
+>>>>>>> login
