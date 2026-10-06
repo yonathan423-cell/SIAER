@@ -36,22 +36,25 @@ class Parcelas extends BaseController
     public function guardar()
     {
         $rules = [
-            'padron'      => 'required',
+            'n_catastro'  => 'required',
             'propietario' => 'required|min_length[3]',
             'cuartel'     => 'required'
         ];
 
         if (!$this->validate($rules)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+            return redirect()->back()->withInput()->with('errores', $this->validator->getErrors());
         }
 
         $nuevaParcela = [
-            'padron'      => $this->request->getPost('padron'),
-            'propietario' => $this->request->getPost('propietario'),
-            'cuartel'     => $this->request->getPost('cuartel'),
-            'hectareas'   => $this->request->getPost('hectareas'),
-            'uso_suelo'   => $this->request->getPost('uso_suelo'),
-            'estado'      => $this->request->getPost('estado') ?? 'activo',
+            'n_catastro'        => $this->request->getPost('n_catastro') ?? $this->request->getPost('catastro'),
+            'propietario'       => $this->request->getPost('propietario'),
+            'cuartel'           => $this->request->getPost('cuartel'),
+            'superficie_ha'     => $this->request->getPost('superficie_ha') ?? $this->request->getPost('superficie'),
+            'actividad'         => $this->request->getPost('actividad'),
+            'latitud'           => $this->request->getPost('latitud'),
+            'longitud'          => $this->request->getPost('longitud'),
+            'anio_relevamiento' => $this->request->getPost('anio_relevamiento'),
+            'estado'            => $this->request->getPost('estado') ?? 'activo',
         ];
 
         if ($this->parcelaModel->insert($nuevaParcela)) {
@@ -66,40 +69,59 @@ class Parcelas extends BaseController
         }
     }
 
-    // Actualizar parcela existente
-    public function actualizar()
+    // Mostrar formulario de edición y procesar actualización
+    public function editar($id = null)
     {
-        $id = $this->request->getPost('id');
+        // 1. Buscar la parcela por ID
+        $parcela = $this->parcelaModel->find($id);
 
-        $rules = [
-            'padron'      => 'required',
-            'propietario' => 'required|min_length[3]',
-            'cuartel'     => 'required'
-        ];
-
-        if (!$this->validate($rules)) {
-            return redirect()->back()->withInput()->with('mensaje', 'Error en la validación de los datos.');
+        if (!$parcela) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("No se encontró la parcela con ID: $id");
         }
 
-        $datosPrevios = $this->parcelaModel->find($id);
+        // 2. Si la petición viene por POST (al presionar "Guardar cambios")
+        if ($this->request->getMethod() === 'post' || $this->request->getMethod() === 'POST') {
+            
+            $rules = [
+                'n_catastro' => 'required',
+                'latitud'    => 'required',
+                'longitud'   => 'required',
+                'cuartel'    => 'required'
+            ];
 
-        $datosNuevos = [
-            'padron'      => $this->request->getPost('padron'),
-            'propietario' => $this->request->getPost('propietario'),
-            'cuartel'     => $this->request->getPost('cuartel'),
-            'hectareas'   => $this->request->getPost('hectareas'),
-            'uso_suelo'   => $this->request->getPost('uso_suelo'),
-            'estado'      => $this->request->getPost('estado'),
-        ];
+            if (!$this->validate($rules)) {
+                return redirect()->back()->withInput()->with('errores', $this->validator->getErrors());
+            }
 
-        if ($this->parcelaModel->update($id, $datosNuevos)) {
-            // Registrar actualización en audit_logs
-            AuditLogger::log('parcelas', (int)$id, 'UPDATE', $datosPrevios, $datosNuevos);
+            $datosPrevios = $parcela;
 
-            return redirect()->to(base_url('parcelas'))->with('mensaje', 'Parcela actualizada correctamente.');
+            $datosNuevos = [
+                'n_catastro'        => $this->request->getPost('n_catastro'),
+                'latitud'           => $this->request->getPost('latitud'),
+                'longitud'          => $this->request->getPost('longitud'),
+                'superficie_ha'     => $this->request->getPost('superficie_ha'),
+                'propietario'       => $this->request->getPost('propietario'),
+                'actividad'         => $this->request->getPost('actividad'),
+                'cuartel'           => $this->request->getPost('cuartel'),
+                'anio_relevamiento' => $this->request->getPost('anio_relevamiento'),
+            ];
+
+            if ($this->parcelaModel->update($id, $datosNuevos)) {
+                // Registrar actualización en audit_logs
+                AuditLogger::log('parcelas', (int)$id, 'UPDATE', $datosPrevios, $datosNuevos);
+
+                $redirectUrl = $this->request->getPost('volver') ?: base_url('parcelas');
+                return redirect()->to($redirectUrl)->with('mensaje', 'Parcela actualizada correctamente.');
+            }
+
+            return redirect()->back()->withInput()->with('error', 'No se pudo actualizar la parcela.');
         }
 
-        return redirect()->back()->withInput()->with('error', 'No se pudo actualizar la parcela.');
+        // 3. Si es GET, mostrar la vista con los datos cargados
+        return view('parcelas/editar', [
+            'titulo'  => 'Editar Parcela',
+            'parcela' => $parcela
+        ]);
     }
 
     // Eliminar parcela

@@ -308,7 +308,7 @@
         </thead>
         <tbody id="tablaCuerpo">
             <?php if (!empty($parcelas)): ?>
-                <?php foreach ($parcelas as$p): ?>
+                <?php foreach ($parcelas as $p): ?>
                 <?php 
                     // Filtro para la tabla HTML: si es Cuartel 1, se omite
                     $numCuartelP = preg_replace('/cuartel/i', '',$p['cuartel'] ?? '');
@@ -360,6 +360,32 @@
     let parcelasReales = [];      
     let capaMarcadores = null;
 
+    // Diccionario de colores por tipo de actividad
+    function obtenerColorActividad(actividad) {
+        const act = normalizarTexto(actividad);
+        
+        if (act.includes('agricola') || act.includes('agricultura') || act.includes('soja') || act.includes('maiz') || act.includes('trigo')) {
+            return '#eab308'; // Amarillo / Dorado
+        }
+        if (act.includes('ganadera') || act.includes('ganaderia') || act.includes('pastizal') || act.includes('vacas') || act.includes('recria')) {
+            return '#22c55e'; // Verde
+        }
+        if (act.includes('pollo') || act.includes('avicola') || act.includes('avicultura') || act.includes('aves')) {
+            return '#f97316'; // Naranja
+        }
+        if (act.includes('colmena') || act.includes('apicultura') || act.includes('miel')) {
+            return '#ec4899'; // Rosa / Magenta
+        }
+        if (act.includes('tambo') || act.includes('leche')) {
+            return '#06b6d4'; // Cían / Azul claro
+        }
+        if (act.includes('mixto') || act.includes('mixta') || act.includes('multiple') || act.includes('varias')) {
+            return '#a855f7'; // Púrpura / Violeta
+        }
+        
+        return '#64748b'; // Gris (Sin especificar / Otros)
+    }
+
     function normalizarTexto(txt) {
         return (txt || '').toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
     }
@@ -385,7 +411,6 @@
     });
 
     function cargarParcelasReales() {
-        // Fallback: Obtenemos directamente las parcelas cargadas desde PHP por si falla AJAX
         const parcelasDesdePhp = <?= json_encode($parcelas ?? []) ?>;
 
         fetch('<?= base_url("mapa/obtenerCapas") ?>')
@@ -403,7 +428,6 @@
     }
 
     function procesarYRenderizar(puntos) {
-        // Mapeo unificado de coordenadas y campos flexibles
         parcelasReales = puntos.map(p => ({
             id: p.id,
             nro_catastro: p.nro_catastro || p.n_catastro || p.padron || 'S/N',
@@ -414,7 +438,6 @@
             latitud: parseFloat(p.latitud || p.lat),
             longitud: parseFloat(p.longitud || p.lng || p.long)
         })).filter(p => {
-            // Exclusión estricta de Cuartel 1 y filtro de coordenadas válidas
             if (!p.latitud || !p.longitud || isNaN(p.latitud) || isNaN(p.longitud)) return false;
             let num = p.cuartel.toString().replace(/cuartel/gi, '').trim();
             return num !== '1' && num.toLowerCase() !== 'i';
@@ -426,13 +449,14 @@
     }
 
     function armarPopup(p) {
+        const colorAct = obtenerColorActividad(p.actividad);
         return `
             <div class="popup-parcela">
                 <span class="popup-titulo">📌 Catastro ${esc(p.nro_catastro)}</span>
                 <div class="popup-dato"><strong>Cuartel:</strong> ${esc(p.cuartel || '-')}</div>
                 <div class="popup-dato"><strong>Propietario:</strong> ${esc(p.propietario)}</div>
                 <div class="popup-dato"><strong>Superficie:</strong> ${p.superficie_ha.toLocaleString('es-AR')} ha</div>
-                <div class="popup-dato"><strong>Actividad:</strong> ${esc(p.actividad)}</div>
+                <div class="popup-dato"><strong>Actividad:</strong> <span style="color:${colorAct}; font-weight:bold;">●</span> ${esc(p.actividad)}</div>
             </div>
         `;
     }
@@ -449,12 +473,14 @@
         puntos.forEach(p => {
             coords.push([p.latitud, p.longitud]);
 
+            const colorPunto = obtenerColorActividad(p.actividad);
+
             const marker = L.circleMarker([p.latitud, p.longitud], {
                 radius: 7,
-                color: '#1d6f42',
-                fillColor: '#2ecc71',
+                color: '#ffffff',         // Borde blanco de contraste
+                fillColor: colorPunto,    // Color dinámico según la actividad
                 fillOpacity: 0.9,
-                weight: 1.5
+                weight: 2
             });
 
             marker.bindPopup(armarPopup(p));
@@ -480,9 +506,11 @@
         box.style.background = '#ffffff';
         box.style.border = '1px solid #cbd5e1';
 
+        const colorAct = obtenerColorActividad(p.actividad);
+
         let botonEditar = '';
         if (rolSesion === 'admin' || rolSesion === 'operador') {
-            botonEditar = `<div style="margin-top:10px;"><a href="<?= base_url('parcelas/editar/') ?>${p.id}" class="chip-btn" style="display:inline-block; text-decoration:none; padding:4px 8px; background:#1d6f42; color:#fff;">✏️ Editar Ficha</a></div>`;
+            botonEditar = `<div style="margin-top:10px;"><a href="<?= base_url('parcelas/editar/') ?>${p.id}" class="chip-btn" style="display:inline-block; text-decoration:none; padding:4px 8px; background:#1d6f42; color:#fff;">✏️️ Editar Ficha</a></div>`;
         }
 
         box.innerHTML = `
@@ -490,7 +518,7 @@
             <p style="margin:3px 0; font-size:0.8rem;"><strong>Cuartel:</strong> ${esc(p.cuartel || '-')}</p>
             <p style="margin:3px 0; font-size:0.8rem;"><strong>Propietario:</strong> ${esc(p.propietario)}</p>
             <p style="margin:3px 0; font-size:0.8rem;"><strong>Superficie:</strong> ${p.superficie_ha.toLocaleString('es-AR')} ha</p>
-            <p style="margin:3px 0; font-size:0.8rem;"><strong>Actividad:</strong> ${esc(p.actividad)}</p>
+            <p style="margin:3px 0; font-size:0.8rem;"><strong>Actividad:</strong> <span style="color:${colorAct}; font-weight:bold;">●</span> ${esc(p.actividad)}</p>
             ${botonEditar}
         `;
     }
@@ -541,7 +569,7 @@
 
         const diccionarioActividad = {
             'agricola': ['agricola', 'agricultura', 'soja', 'maiz', 'trigo'],
-            'ganadera': ['ganadera', 'ganaderia', 'pastizal', 'vacas'],
+            'ganadera': ['ganadera', 'ganaderia', 'pastizal', 'vacas', 'recria'],
             'multiple': ['multiple', 'varias'],
             'pollos': ['pollos', 'avicultura', 'aves', 'avícola'],
             'colmenas': ['colmenas', 'apicultura', 'miel'],

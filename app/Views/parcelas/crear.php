@@ -46,7 +46,7 @@
         grid-template-columns: repeat(2, 1fr);
         gap: 20px;
     }
-    /* El primer campo (catastro) y el propietario ocupan toda la fila */
+    /* Campos que ocupan toda la fila */
     .grid-full {
         grid-column: 1 / -1;
     }
@@ -142,7 +142,7 @@
         color: #1e293b;
     }
 
-    /* Que en pantallas chicas pase a una sola columna */
+    /* Ajuste para pantallas pequeñas */
     @media (max-width: 640px) {
         .form-grid {
             grid-template-columns: 1fr;
@@ -157,7 +157,7 @@
         <h2>
             <i class="fa-solid fa-map-pin" style="color: #0f766e;"></i> Registrar Nueva Parcela
         </h2>
-        <p>Complete los datos catastrales de la parcela. Ingrese las coordenadas de latitud y longitud de forma manual.</p>
+        <p>Complete los datos catastrales, la actividad desarrollada y la ubicación de la parcela.</p>
     </div>
 
     <!-- Tarjeta con el formulario a todo el ancho -->
@@ -171,7 +171,7 @@
                 <div class="seccion-titulo">Datos Catastrales</div>
 
                 <div class="grid-full">
-                    <label for="catastro" class="form-label-custom">Nº de Catastro</label>
+                    <label for="catastro" class="form-label-custom">Nº de Catastro / Partida *</label>
                     <input type="text" class="form-control-custom" id="catastro" name="catastro" placeholder="Ej: 055-1234" required>
                 </div>
 
@@ -183,6 +183,25 @@
                 <div>
                     <label for="propietario" class="form-label-custom">Propietario / Titular</label>
                     <input type="text" class="form-control-custom" id="propietario" name="propietario" placeholder="Nombre o Razón Social">
+                </div>
+
+                <!-- Actividad Productiva -->
+                <div class="seccion-titulo">Actividad Productiva</div>
+
+                <div class="grid-full">
+                    <label for="actividad" class="form-label-custom">Actividad / Rubro Principal *</label>
+                    <select class="form-select-custom" id="actividad" name="actividad" required>
+                        <option value="" disabled selected>-- Seleccione una actividad --</option>
+                        <option value="Agrícola">🌾 Agrícola (Soja / Maíz / Trigo)</option>
+                        <option value="Ganadería Recría">🐄 Ganadería Recría / Pastizal</option>
+                        <option value="Avícola / Pollos">🐓 Avícola / Pollos</option>
+                        <option value="Apicultura / Colmenas">🐝 Apicultura / Colmenas</option>
+                        <option value="Tambo / Lechería">🥛 Tambo / Lechería</option>
+                        <option value="Mixta / Múltiple">🔀 Mixta / Múltiple</option>
+                        <option value="Urbano / Residencial">🏠 Urbano / Residencial</option>
+                        <option value="Sin Especificar">⚪ Sin Especificar / Otro</option>
+                    </select>
+                    <p class="campo-ayuda">Esta categoría definirá el color del marcador en el mapa GIS.</p>
                 </div>
 
                 <!-- Ubicación -->

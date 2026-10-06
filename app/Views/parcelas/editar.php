@@ -1,7 +1,6 @@
 <?= $this->extend('layout/base') ?>
 
 <?= $this->section('estilos') ?>
-<!-- Leaflet CSS para el mapa interactivo -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
 <style>
@@ -65,7 +64,7 @@
   }
 
   #mapaSelector {
-    height: 480px;
+    height: 520px;
     width: 100%;
     border-radius: 12px;
     border: 1px solid #cbd5e1;
@@ -146,7 +145,6 @@
 <?php endif; ?>
 
 <div class="grid-container">
-    <!-- Formulario de edición -->
     <form class="form-parcela" method="post" action="<?= base_url('parcelas/editar/' . (int) $parcela['id']) ?>">
         <input type="hidden" name="volver" value="<?= esc(base_url('parcelas') . (isset($_GET) && $_GET ? '?' . http_build_query($_GET) : '')) ?>">
 
@@ -165,11 +163,27 @@
         </div>
 
         <label>Superficie (ha) 
-            <input type="text" name="superficie_ha" value="<?= esc($parcela['superficie_ha'] ?? '') ?>">
+            <input type="text" name="superficie_ha" value="<?= esc($parcela['superficie_ha'] ?? $parcela['superficie'] ?? '') ?>">
         </label>
 
         <label>Propietario 
             <input type="text" name="propietario" value="<?= esc($parcela['propietario'] ?? '') ?>">
+        </label>
+
+        <!-- Actividad Productiva -->
+        <label>Actividad / Rubro Principal
+            <?php $actividadActual = trim((string)($parcela['actividad'] ?? $parcela['uso_suelo'] ?? '')); ?>
+            <select name="actividad" required>
+                <option value="" disabled <?= empty($actividadActual) ? 'selected' : '' ?>>-- Seleccione una actividad --</option>
+                <option value="Agrícola" <?= in_array($actividadActual, ['Agrícola', 'Agricola']) ? 'selected' : '' ?>>🌾 Agrícola (Soja / Maíz / Trigo)</option>
+                <option value="Ganadería Recría" <?= in_array($actividadActual, ['Ganadería Recría', 'Ganaderia Recria']) ? 'selected' : '' ?>>🐄 Ganadería Recría / Pastizal</option>
+                <option value="Avícola / Pollos" <?= in_array($actividadActual, ['Avícola / Pollos', 'Pollos']) ? 'selected' : '' ?>>🐓 Avícola / Pollos</option>
+                <option value="Apicultura / Colmenas" <?= in_array($actividadActual, ['Apicultura / Colmenas', 'Colmenas']) ? 'selected' : '' ?>>🐝 Apicultura / Colmenas</option>
+                <option value="Tambo / Lechería" <?= in_array($actividadActual, ['Tambo / Lechería', 'Tambos']) ? 'selected' : '' ?>>🥛 Tambo / Lechería</option>
+                <option value="Mixta / Múltiple" <?= in_array($actividadActual, ['Mixta / Múltiple', 'Múltiple']) ? 'selected' : '' ?>>🔀 Mixta / Múltiple</option>
+                <option value="Urbano / Residencial" <?= in_array($actividadActual, ['Urbano / Residencial', 'Urbano']) ? 'selected' : '' ?>>🏠 Urbano / Residencial</option>
+                <option value="Sin Especificar" <?= in_array($actividadActual, ['Sin Especificar', 'Sin datos']) ? 'selected' : '' ?>>⚪ Sin Especificar / Otro</option>
+            </select>
         </label>
 
         <label>Cuartel 
@@ -177,8 +191,9 @@
                 <?php 
                 $cuarteles = [2 => 'Cuartel 2 (Prioritario)', 8 => 'Cuartel 8 (Prioritario)', 1 => 'Cuartel 1', 3 => 'Cuartel 3', 4 => 'Cuartel 4', 5 => 'Cuartel 5', 6 => 'Cuartel 6', 7 => 'Cuartel 7'];
                 foreach ($cuarteles as $val =>$texto): 
+                    $cuartelDb = trim(preg_replace('/cuartel/i', '',$parcela['cuartel'] ?? ''));
                 ?>
-                    <option value="<?= $val ?>" <?= ((string)($parcela['cuartel'] ?? '') === (string)$val) ? 'selected' : '' ?>><?=$texto ?></option>
+                    <option value="<?= $val ?>" <?= ((string)$cuartelDb === (string)$val) ? 'selected' : '' ?>><?=$texto ?></option>
                 <?php endforeach; ?>
             </select>
         </label>
@@ -200,7 +215,6 @@
         </div>
     </form>
 
-    <!-- Mapa Selector -->
     <div>
         <div id="mapaSelector"></div>
     </div>
@@ -211,11 +225,9 @@
 <?= $this->section('scripts') ?>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    // 1. Obtener coordenadas actuales de la parcela
     const latInicial = parseFloat(document.getElementById('latitud').value);
     const lngInicial = parseFloat(document.getElementById('longitud').value);
 
-    // 2. Centrar mapa en la parcela si tiene coordenadas, o por defecto en la zona
     const tieneCoords = !isNaN(latInicial) && !isNaN(lngInicial);
     const centro = tieneCoords ? [latInicial, lngInicial] : [-35.576, -58.012];
     const zoomInicial = tieneCoords ? 14 : 12;
@@ -229,14 +241,12 @@
 
     let marcador;
 
-    // 3. Si ya existían coordenadas, ubicar el pin inicial
     if (tieneCoords) {
         marcador = L.marker(centro).addTo(map)
             .bindPopup('<b>Ubicación actual</b><br>Catastro: <?= esc($parcela['n_catastro'] ?? $parcela['nro_catastro'] ?? '') ?>')
             .openPopup();
     }
 
-    // 4. Al hacer clic en el mapa, reubicar la parcela y actualizar inputs
     map.on('click', function(e) {
         const lat = e.latlng.lat.toFixed(6);
         const lng = e.latlng.lng.toFixed(6);
