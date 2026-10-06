@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Libraries\AuditLogger;
 use App\Models\UsuarioModel;
 
 class Usuarios extends BaseController
@@ -35,7 +36,8 @@ class Usuarios extends BaseController
     public function guardar()
     {
         $rules = [
-            'usuario'  => 'required|min_length[3]|is_unique[usuarios.usuario]',
+            'nombre'   => 'required|min_length[3]',
+            'email'    => 'required|valid_email|is_unique[usuarios.email]',
             'password' => 'required|min_length[6]',
             'rol'      => 'required|in_list[admin,operador,cliente]'
         ];
@@ -44,54 +46,83 @@ class Usuarios extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        $this->usuarioModel->save([
-            'usuario'    => $this->request->getPost('usuario'),
+        $nuevoUsuario = [
+            'nombre'     => $this->request->getPost('nombre'),
+            'email'      => $this->request->getPost('email'),
             'contrasena' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
             'rol'        => strtolower($this->request->getPost('rol')),
-        ]);
+        ];
 
-        return redirect()->to(base_url('usuarios'))->with('mensaje', 'Usuario creado correctamente.');
+        if ($this->usuarioModel->insert($nuevoUsuario)) {
+            $nuevoId = $this->usuarioModel->getInsertID();
+
+            // Registro en la tabla de auditoría
+            AuditLogger::log('usuarios', $nuevoId, 'INSERT', null, [
+                'nombre' => $nuevoUsuario['nombre'],
+                'email'  => $nuevoUsuario['email'],
+                'rol'    => $nuevoUsuario['rol']
+            ]);
+
+            return redirect()->to(base_url('usuarios'))->with('mensaje', 'Usuario creado correctamente.');
+        }
+
+        return redirect()->back()->withInput()->with('error', 'No se pudo insertar en la base de datos.');
     }
 
-    // Procesar la actualización desde el modal del lápiz
+    // Procesar la actualización desde el modal
     public function actualizar()
     {
         $id = $this->request->getPost('id');
 
         $rules = [
-            'usuario' => "required|min_length[3]|is_unique[usuarios.usuario,id,{$id}]",
-            'rol'     => 'required|in_list[admin,operador,cliente]'
+            'nombre' => 'required|min_length[3]',
+            'email'  => "required|valid_email|is_unique[usuarios.email,id,{$id}]",
+            'rol'    => 'required|in_list[admin,operador,cliente]'
         ];
 
         if (!$this->validate($rules)) {
             return redirect()->back()->withInput()->with('mensaje', 'Error en la validación de los datos.');
         }
 
+        $datosPrevios = $this->usuarioModel->find($id);
+
         $data = [
-            'usuario' => $this->request->getPost('usuario'),
-            'rol'     => strtolower($this->request->getPost('rol')),
+            'nombre' => $this->request->getPost('nombre'),
+            'email'  => $this->request->getPost('email'),
+            'rol'    => strtolower($this->request->getPost('rol')),
         ];
 
-        // Si enviaron una nueva contraseña desde el modal, la actualizamos
         if ($this->request->getPost('password')) {
             $data['contrasena'] = password_hash($this->request->getPost('password'), PASSWORD_DEFAULT);
         }
 
-        $this->usuarioModel->update($id, $data);
+        if ($this->usuarioModel->update($id, $data)) {
+            // Guardar auditoría
+            AuditLogger::log('usuarios', $id, 'UPDATE', $datosPrevios, $data);
 
-        return redirect()->to(base_url('usuarios'))->with('mensaje', '¡Usuario actualizado correctamente!');
+            return redirect()->to(base_url('usuarios'))->with('mensaje', '¡Usuario actualizado correctamente!');
+        }
+
+        return redirect()->back()->withInput()->with('error', 'No se pudo actualizar el usuario.');
     }
 
     // Eliminar usuario
     public function eliminar($id)
     {
-        // Evitar que el admin en sesión se elimine a sí mismo
         if ((int)$id === (int)session()->get('usuario_id')) {
             return redirect()->to(base_url('usuarios'))->with('error', 'No puedes eliminar tu propia cuenta.');
         }
 
-        $this->usuarioModel->delete($id);
-        return redirect()->to(base_url('usuarios'))->with('mensaje', 'Usuario eliminado correctamente.');
+        $datosPrevios = $this->usuarioModel->find($id);
+
+        if ($datosPrevios && $this->usuarioModel->delete($id)) {
+            // Guardar auditoría
+            AuditLogger::log('usuarios', $id, 'DELETE', $datosPrevios, null);
+
+            return redirect()->to(base_url('usuarios'))->with('mensaje', 'Usuario eliminado correctamente.');
+        }
+
+        return redirect()->to(base_url('usuarios'))->with('error', 'No se pudo eliminar el usuario.');
     }
 
     // Actualización rápida de rol vía AJAX
@@ -105,7 +136,6 @@ class Usuarios extends BaseController
 
             if (in_array($rol, ['admin', 'operador', 'cliente'])) {
                 
-                // Evita que el admin logueado se desgradúe a sí mismo por error
                 if ($id === (int) session()->get('usuario_id') && $rol !== 'admin') {
                     return $this->response->setJSON([
                         'success' => false, 
@@ -113,9 +143,12 @@ class Usuarios extends BaseController
                     ]);
                 }
 
-                $actualizado = $this->usuarioModel->update($id, ['rol' => $rol]);
+                $datosPrevios = $this->usuarioModel->find($id);
+                $actualizado  = $this->usuarioModel->update($id, ['rol' => $rol]);
 
                 if ($actualizado) {
+                    AuditLogger::log('usuarios', $id, 'UPDATE', $datosPrevios, ['rol' => $rol]);
+
                     return $this->response->setJSON([
                         'success' => true, 
                         'mensaje' => 'Rol actualizado correctamente.'

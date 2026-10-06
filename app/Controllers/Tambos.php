@@ -1,6 +1,8 @@
 <?php
 namespace App\Controllers;
 
+use App\Libraries\AuditLogger;
+
 use App\Models\TamboModel;
 
 class Tambos extends BaseController

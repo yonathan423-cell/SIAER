@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Libraries\AuditLogger;
+
 use App\Models\ParcelaModel;
 
 class Parcelas extends BaseController
