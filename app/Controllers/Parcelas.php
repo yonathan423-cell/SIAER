@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Libraries\AuditLogger;
-
 use App\Models\ParcelaModel;
 
 class Parcelas extends BaseController
@@ -15,242 +14,106 @@ class Parcelas extends BaseController
         $this->parcelaModel = new ParcelaModel();
     }
 
+    // Listado de parcelas
     public function index()
     {
-        $anio    = $this->request->getGet('anio');
-        $cuartel = $this->request->getGet('cuartel');
-
-        // Traemos la actividad de explotaciones.
-        // MAX() + groupBy evita que una parcela con VARIAS explotaciones
-        // aparezca duplicada en la tabla.
-        $builder = $this->parcelaModel
-            ->select('parcelas.*, MAX(explotaciones.tipo_de_actividad) AS tipo_de_actividad')
-            ->join('explotaciones', 'explotaciones.id_parcelas = parcelas.id', 'left');
-
-        // 👇 Excluimos el Cuartel 1 (no es un cuartel tenido en cuenta)
-        $builder = $builder->where('parcelas.cuartel !=', 'Cuartel 1')
-                           ->where('parcelas.cuartel !=', '1');
-
-        if ($anio) {
-            $builder = $builder->where('parcelas.anio_relevamiento', (int) $anio);
-        }
-
-        if ($cuartel) {
-            $builder = $builder->like('parcelas.cuartel', $cuartel);
-        } else {
-            $builder = $builder->orderBy("FIELD(parcelas.cuartel, '2', '8') DESC", '', false)
-                               ->orderBy('parcelas.id', 'ASC');
-        }
-
-        // 👇 Una fila por parcela (mata los duplicados del JOIN)
-        $builder = $builder->groupBy('parcelas.id');
-
-        $parcelas = $builder->findAll();
-
-        $superficieTotal = 0;
-        foreach ($parcelas as &$p) {
-            $sup = (float)($p['superficie'] ?? $p['superficie_ha'] ?? 0);
-            $p['superficie']  = $sup;
-            $p['catastro']    = $p['n_catastro'] ?? $p['catastro'] ?? 'S/N';
-            $p['propietario'] = $p['propietario'] ?? 'Sin datos';
-            $p['actividad']   = $p['tipo_de_actividad'] ?? $p['actividad'] ?? 'Sin especificar';
-            $superficieTotal += $sup;
-        }
-
         $data = [
-            'parcelas'            => $parcelas,
-            'anioSeleccionado'    => $anio,
-            'cuartelSeleccionado' => $cuartel,
-            'superficie_total'    => $superficieTotal ?: 2046312,
-            'sup_recria'          => 343454,
-            'sup_urbano'          => 102.5,
-            'sup_agricola'        => 337785
+            'titulo'   => 'Gestión de Parcelas',
+            'parcelas' => $this->parcelaModel->findAll()
         ];
 
         return view('parcelas/index', $data);
     }
 
-    public function misParcelas()
-    {
-        $usuarioLogueado = session()->get('usuario');
-
-        $parcelas = $this->parcelaModel
-            ->select('parcelas.*, MAX(explotaciones.tipo_de_actividad) AS tipo_de_actividad')
-            ->join('explotaciones', 'explotaciones.id_parcelas = parcelas.id', 'left')
-            ->where('parcelas.propietario', $usuarioLogueado)
-            // 👇 Excluimos el Cuartel 1 (no es un cuartel tenido en cuenta)
-            ->where('parcelas.cuartel !=', 'Cuartel 1')
-            ->where('parcelas.cuartel !=', '1')
-            // 👇 Una fila por parcela (mata los duplicados del JOIN)
-            ->groupBy('parcelas.id')
-            ->findAll();
-
-        foreach ($parcelas as &$p) {
-            $p['superficie']  = (float)($p['superficie'] ?? 0);
-            $p['catastro']    = $p['n_catastro'] ?? 'S/N';
-            $p['propietario'] = $p['propietario'] ?? 'Sin datos';
-            $p['actividad']   = $p['tipo_de_actividad'] ?? 'Sin especificar';
-        }
-
-        $data = [
-            'titulo'   => 'Mis Parcelas',
-            'parcelas' => $parcelas,
-        ];
-
-        if (is_file(APPPATH . 'Views/parcelas/mis_parcelas.php')) {
-            return view('parcelas/mis_parcelas', $data);
-        } elseif (is_file(APPPATH . 'Views/cliente/mis_parcelas.php')) {
-            return view('cliente/mis_parcelas', $data);
-        } elseif (is_file(APPPATH . 'Views/mis_parcelas.php')) {
-            return view('mis_parcelas', $data);
-        }
-
-        return view('parcelas/mis_parcelas', $data);
-    }
-
-    public function ver($id)
-    {
-        $parcela = $this->parcelaModel->find($id);
-
-        if (! $parcela) {
-            return redirect()->to(base_url('parcelas'))->with('error', 'Parcela no encontrada.');
-        }
-
-        $parcela['catastro'] = $parcela['n_catastro'] ?? $parcela['catastro'] ?? $parcela['id'];
-
-        return view('parcelas/ver', [
-            'titulo'  => 'Detalle de Parcela #' . $parcela['catastro'],
-            'parcela' => $parcela
-        ]);
-    }
-
+    // Formulario de creación
     public function crear()
     {
-        return view('parcelas/crear', ['titulo' => 'Nueva Parcela']);
+        $data = ['titulo' => 'Nueva Parcela'];
+        return view('parcelas/crear', $data);
     }
 
+    // Guardar nueva parcela
     public function guardar()
     {
-        $volver = $this->request->getPost('volver') ?: base_url('parcelas');
-
-        $data = [
-            'n_catastro'        => $this->request->getPost('catastro') ?? $this->request->getPost('nro_catastro') ?? $this->request->getPost('n_catastro'),
-            'latitud'           => $this->request->getPost('latitud'),
-            'longitud'          => $this->request->getPost('longitud'),
-            'superficie'        => $this->request->getPost('superficie_ha') ?? $this->request->getPost('superficie'),
-            'propietario'       => $this->request->getPost('propietario'),
-            'cuartel'           => $this->request->getPost('cuartel'),
-            'anio_relevamiento' => $this->request->getPost('anio_relevamiento'),
+        $rules = [
+            'padron'      => 'required',
+            'propietario' => 'required|min_length[3]',
+            'cuartel'     => 'required'
         ];
 
-        if ($this->parcelaModel->insert($data) === false) {
-            return redirect()->back()
-                ->withInput()
-                ->with('errores', $this->parcelaModel->errors());
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        return redirect()->to($volver)
-            ->with('mensaje', '✅ Parcela creada correctamente.');
+        $nuevaParcela = [
+            'padron'      => $this->request->getPost('padron'),
+            'propietario' => $this->request->getPost('propietario'),
+            'cuartel'     => $this->request->getPost('cuartel'),
+            'hectareas'   => $this->request->getPost('hectareas'),
+            'uso_suelo'   => $this->request->getPost('uso_suelo'),
+            'estado'      => $this->request->getPost('estado') ?? 'activo',
+        ];
+
+        if ($this->parcelaModel->insert($nuevaParcela)) {
+            $nuevoId = $this->parcelaModel->getInsertID();
+
+            // Registrar inserción en audit_logs
+            AuditLogger::log('parcelas', $nuevoId, 'INSERT', null, $nuevaParcela);
+
+            return redirect()->to(base_url('parcelas'))->with('mensaje', 'Parcela creada correctamente.');
+        } else {
+            dd($this->parcelaModel->errors(), $this->parcelaModel->db()->getError());
+        }
     }
 
-    public function editar($id)
+    // Actualizar parcela existente
+    public function actualizar()
     {
-        $parcela = $this->parcelaModel->find($id);
+        $id = $this->request->getPost('id');
 
-        if (! $parcela) {
-            return redirect()->to(base_url('parcelas'))->with('error', 'Parcela no encontrada.');
+        $rules = [
+            'padron'      => 'required',
+            'propietario' => 'required|min_length[3]',
+            'cuartel'     => 'required'
+        ];
+
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('mensaje', 'Error en la validación de los datos.');
         }
 
-        if ($this->request->is('post') || $this->request->getMethod() === 'POST') {
-            $volver = $this->request->getPost('volver') ?: base_url('parcelas');
+        $datosPrevios = $this->parcelaModel->find($id);
 
-            if (! $this->parcelaModel->update($id, $this->request->getPost())) {
-                return redirect()->back()
-                    ->withInput()
-                    ->with('errores', $this->parcelaModel->errors());
-            }
+        $datosNuevos = [
+            'padron'      => $this->request->getPost('padron'),
+            'propietario' => $this->request->getPost('propietario'),
+            'cuartel'     => $this->request->getPost('cuartel'),
+            'hectareas'   => $this->request->getPost('hectareas'),
+            'uso_suelo'   => $this->request->getPost('uso_suelo'),
+            'estado'      => $this->request->getPost('estado'),
+        ];
 
-            return redirect()->to($volver)->with('mensaje', 'Parcela actualizada correctamente.');
+        if ($this->parcelaModel->update($id, $datosNuevos)) {
+            // Registrar actualización en audit_logs
+            AuditLogger::log('parcelas', (int)$id, 'UPDATE', $datosPrevios, $datosNuevos);
+
+            return redirect()->to(base_url('parcelas'))->with('mensaje', 'Parcela actualizada correctamente.');
         }
 
-        return view('parcelas/editar', ['titulo' => 'Editar Parcela', 'parcela' => $parcela]);
+        return redirect()->back()->withInput()->with('error', 'No se pudo actualizar la parcela.');
     }
 
+    // Eliminar parcela
     public function eliminar($id)
     {
-        $this->parcelaModel->delete($id);
-        return redirect()->to(base_url('parcelas'))->with('mensaje', 'Parcela eliminada correctamente.');
-    }
+        $datosPrevios = $this->parcelaModel->find($id);
 
-    public function mapaJson()
-    {
-        $anio    = $this->request->getGet('anio');
-        $cuartel = $this->request->getGet('cuartel');
+        if ($datosPrevios && $this->parcelaModel->delete($id)) {
+            // Registrar eliminación en audit_logs
+            AuditLogger::log('parcelas', (int)$id, 'DELETE', $datosPrevios, null);
 
-        $builder = $this->parcelaModel
-            ->select('parcelas.*, MAX(explotaciones.tipo_de_actividad) AS tipo_de_actividad')
-            ->join('explotaciones', 'explotaciones.id_parcelas = parcelas.id', 'left');
-
-        // 👇 Excluimos el Cuartel 1 (no es un cuartel tenido en cuenta)
-        $builder = $builder->where('parcelas.cuartel !=', 'Cuartel 1')
-                           ->where('parcelas.cuartel !=', '1');
-
-        if ($anio) {
-            $builder = $builder->where('parcelas.anio_relevamiento', (int) $anio);
+            return redirect()->to(base_url('parcelas'))->with('mensaje', 'Parcela eliminada correctamente.');
         }
 
-        if ($cuartel) {
-            $builder = $builder->like('parcelas.cuartel', $cuartel);
-        } else {
-            $builder = $builder->orderBy("FIELD(parcelas.cuartel, '2', '8') DESC", '', false);
-        }
-
-        // 👇 Una fila por parcela (mata los duplicados del JOIN)
-        $builder = $builder->groupBy('parcelas.id');
-
-        $parcelas = $builder->findAll();
-
-        $puntos = array_map(function ($p) {
-            return [
-                'id'            => $p['id'],
-                'latitud'       => (float) ($p['latitud'] ?? $p['lat'] ?? 0),
-                'longitud'      => (float) ($p['longitud'] ?? $p['lng'] ?? 0),
-                'nro_catastro'  => $p['n_catastro'] ?? $p['catastro'] ?? 'S/N',
-                'cuartel'       => $p['cuartel'] ?? '',
-                'propietario'   => $p['propietario'] ?? 'Sin datos',
-                'superficie_ha' => (float) ($p['superficie'] ?? $p['superficie_ha'] ?? 0),
-                'actividad'     => $p['tipo_de_actividad'] ?? $p['actividad'] ?? 'Sin especificar',
-            ];
-        }, $parcelas);
-
-        // ===================================================================
-        // TAMBOS reales desde la tabla "tambos" (id, productor, latitud, longitud)
-        // DISTINCT para que no se repitan si hubiera filas duplicadas.
-        // ===================================================================
-        $db = \Config\Database::connect();
-        $tambos = $db->table('tambos')
-            ->select('id, productor, latitud, longitud')
-            ->distinct()
-            ->get()
-            ->getResultArray();
-
-        foreach ($tambos as $t) {
-            if (empty($t['latitud']) || empty($t['longitud'])) {
-                continue;
-            }
-
-            $puntos[] = [
-                'id'            => 'tambo-' . $t['id'],
-                'latitud'       => (float) $t['latitud'],
-                'longitud'      => (float) $t['longitud'],
-                'nro_catastro'  => 'Tambo #' . $t['id'],
-                'cuartel'       => 'Sin asignar',
-                'propietario'   => $t['productor'] ?: 'Sin datos',
-                'superficie_ha' => 0,
-                'actividad'     => 'Tambos',
-            ];
-        }
-
-        return $this->response->setJSON($puntos);
+        return redirect()->to(base_url('parcelas'))->with('error', 'No se pudo eliminar la parcela.');
     }
 }
