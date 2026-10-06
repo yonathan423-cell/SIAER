@@ -74,7 +74,6 @@
 
     .info-box { background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 12px; text-align: center; color: #64748b; font-size: 0.8rem; }
 
-    /* --- FIX: que el número de catastro largo NO se desborde del panel lateral --- */
     #detalleParcelaBox {
         overflow-wrap: anywhere;
         word-break: break-word;
@@ -92,7 +91,6 @@
         word-break: break-word;
         overflow-wrap: anywhere;
     }
-    /* --- FIN FIX --- */
 
     .gis-map-container {
         flex: 1;
@@ -108,7 +106,7 @@
         background: #e5e7eb;
     }
 
-    /* Viñeta/popup del mapa */
+    /* Popup del mapa */
     .popup-parcela { font-size: 0.82rem; line-height: 1.45; min-width: 180px; }
     .popup-parcela .popup-titulo { color: #1f3864; font-weight: 800; display: block; margin-bottom: 5px; word-break: break-all; }
     .popup-parcela .popup-dato { margin: 2px 0; }
@@ -310,14 +308,21 @@
         </thead>
         <tbody id="tablaCuerpo">
             <?php if (!empty($parcelas)): ?>
-                <?php foreach ($parcelas as $p): ?>
+                <?php foreach ($parcelas as$p): ?>
+                <?php 
+                    // Filtro para la tabla HTML: si es Cuartel 1, se omite
+                    $numCuartelP = preg_replace('/cuartel/i', '',$p['cuartel'] ?? '');
+                    if (trim($numCuartelP) === '1' || strtolower(trim($p['cuartel'] ?? '')) === 'cuartel 1' || strtolower(trim($p['cuartel'] ?? '')) === 'cuartel i') {
+                        continue;
+                    }
+                ?>
                 <tr>
                     <td>
                         <strong>Catastro: <?= esc($p['n_catastro'] ?? $p['id']) ?></strong>
                         <small class="subtexto-tabla"><?= esc($p['cuartel'] ?? 'S/N') ?></small>
                     </td>
                     <td>
-                        <span><?= esc($p['cuartel'] ?? 'Cuartel I') ?></span>
+                        <span><?= esc($p['cuartel'] ?? 'S/D') ?></span>
                         <small class="subtexto-tabla"><?= esc($p['localidad'] ?? 'General Paz') ?></small>
                     </td>
                     <td>
@@ -340,7 +345,7 @@
                 <?php endforeach; ?>
             <?php else: ?>
                 <tr>
-                    <td colspan="6" style="text-align:center; padding:16px; color:#64748b;">No hay registros cargados o no se seleccionó ninguna parcela.</td>
+                    <td colspan="6" style="text-align:center; padding:16px; color:#64748b;">No hay registros cargados.</td>
                 </tr>
             <?php endif; ?>
         </tbody>
@@ -359,7 +364,6 @@
         return (txt || '').toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
     }
 
-    // Escapa texto para meterlo seguro dentro del HTML del popup
     function esc(txt) {
         return (txt == null ? '' : txt.toString())
             .replace(/&/g, '&amp;').replace(/</g, '&lt;')
@@ -381,26 +385,54 @@
     });
 
     function cargarParcelasReales() {
+        // Fallback: Obtenemos directamente las parcelas cargadas desde PHP por si falla AJAX
+        const parcelasDesdePhp = <?= json_encode($parcelas ?? []) ?>;
+
         fetch('<?= base_url("mapa/obtenerCapas") ?>')
-            .then(r => r.json())
-            .then(puntos => {
-                parcelasReales = puntos;
-                pintarMarcadoresReales(parcelasReales, true);
-                poblarSelectCuartelesReal(parcelasReales);
-                actualizarMetricasReales(parcelasReales);
+            .then(r => {
+                if (!r.ok) throw new Error("Error HTTP " + r.status);
+                return r.json();
             })
-            .catch(e => console.error('No se pudieron cargar las parcelas:', e));
+            .then(puntos => {
+                procesarYRenderizar(puntos);
+            })
+            .catch(e => {
+                console.warn('Fallo AJAX en mapa/obtenerCapas, usando datos locales de PHP:', e);
+                procesarYRenderizar(parcelasDesdePhp);
+            });
     }
 
-    // Arma el HTML de la viñeta/popup de un punto
+    function procesarYRenderizar(puntos) {
+        // Mapeo unificado de coordenadas y campos flexibles
+        parcelasReales = puntos.map(p => ({
+            id: p.id,
+            nro_catastro: p.nro_catastro || p.n_catastro || p.padron || 'S/N',
+            cuartel: p.cuartel || '',
+            propietario: p.propietario || 'Sin datos',
+            superficie_ha: parseFloat(p.superficie_ha || p.superficie || p.hectareas || 0),
+            actividad: p.actividad || p.uso_suelo || 'Sin especificar',
+            latitud: parseFloat(p.latitud || p.lat),
+            longitud: parseFloat(p.longitud || p.lng || p.long)
+        })).filter(p => {
+            // Exclusión estricta de Cuartel 1 y filtro de coordenadas válidas
+            if (!p.latitud || !p.longitud || isNaN(p.latitud) || isNaN(p.longitud)) return false;
+            let num = p.cuartel.toString().replace(/cuartel/gi, '').trim();
+            return num !== '1' && num.toLowerCase() !== 'i';
+        });
+
+        pintarMarcadoresReales(parcelasReales, true);
+        poblarSelectCuartelesReal(parcelasReales);
+        actualizarMetricasReales(parcelasReales);
+    }
+
     function armarPopup(p) {
         return `
             <div class="popup-parcela">
-                <span class="popup-titulo">📌 Catastro ${esc(p.nro_catastro || 'S/N')}</span>
+                <span class="popup-titulo">📌 Catastro ${esc(p.nro_catastro)}</span>
                 <div class="popup-dato"><strong>Cuartel:</strong> ${esc(p.cuartel || '-')}</div>
-                <div class="popup-dato"><strong>Propietario:</strong> ${esc(p.propietario || 'Sin datos')}</div>
-                <div class="popup-dato"><strong>Superficie:</strong> ${(p.superficie_ha || 0).toLocaleString('es-AR')} ha</div>
-                <div class="popup-dato"><strong>Actividad:</strong> ${esc(p.actividad || 'Sin especificar')}</div>
+                <div class="popup-dato"><strong>Propietario:</strong> ${esc(p.propietario)}</div>
+                <div class="popup-dato"><strong>Superficie:</strong> ${p.superficie_ha.toLocaleString('es-AR')} ha</div>
+                <div class="popup-dato"><strong>Actividad:</strong> ${esc(p.actividad)}</div>
             </div>
         `;
     }
@@ -415,23 +447,21 @@
         const coords = [];
 
         puntos.forEach(p => {
-            if (!p.latitud || !p.longitud) return;
             coords.push([p.latitud, p.longitud]);
 
             const marker = L.circleMarker([p.latitud, p.longitud], {
-                radius: 6,
+                radius: 7,
                 color: '#1d6f42',
                 fillColor: '#2ecc71',
-                fillOpacity: 0.85,
+                fillOpacity: 0.9,
                 weight: 1.5
             });
 
-            // 👇 NUEVO: viñeta/popup con la info sobre el mapa
             marker.bindPopup(armarPopup(p));
 
             marker.on('click', function () {
                 mapa.flyTo([p.latitud, p.longitud], 15, { duration: 0.5 });
-                mostrarDetalleReal(p, rolSesion);  // también llena el panel lateral
+                mostrarDetalleReal(p, rolSesion);
             });
 
             capaMarcadores.addLayer(marker);
@@ -456,11 +486,11 @@
         }
 
         box.innerHTML = `
-            <h4 style="margin:0 0 6px 0; color:#1f3864;">📌 Catastro ${p.nro_catastro || 'S/N'}</h4>
-            <p style="margin:3px 0; font-size:0.8rem;"><strong>Cuartel:</strong> ${p.cuartel || '-'}</p>
-            <p style="margin:3px 0; font-size:0.8rem;"><strong>Propietario:</strong> ${p.propietario || 'Sin datos'}</p>
-            <p style="margin:3px 0; font-size:0.8rem;"><strong>Superficie:</strong> ${(p.superficie_ha || 0).toLocaleString('es-AR')} ha</p>
-            <p style="margin:3px 0; font-size:0.8rem;"><strong>Actividad:</strong> ${p.actividad || 'Sin especificar'}</p>
+            <h4 style="margin:0 0 6px 0; color:#1f3864;">📌 Catastro ${esc(p.nro_catastro)}</h4>
+            <p style="margin:3px 0; font-size:0.8rem;"><strong>Cuartel:</strong> ${esc(p.cuartel || '-')}</p>
+            <p style="margin:3px 0; font-size:0.8rem;"><strong>Propietario:</strong> ${esc(p.propietario)}</p>
+            <p style="margin:3px 0; font-size:0.8rem;"><strong>Superficie:</strong> ${p.superficie_ha.toLocaleString('es-AR')} ha</p>
+            <p style="margin:3px 0; font-size:0.8rem;"><strong>Actividad:</strong> ${esc(p.actividad)}</p>
             ${botonEditar}
         `;
     }
@@ -473,7 +503,9 @@
         puntos.forEach(p => { 
             if (p.cuartel) {
                 let numCuartel = p.cuartel.toString().replace(/cuartel/gi, '').trim();
-                cuartelesSet.add(numCuartel); 
+                if (numCuartel !== '1' && numCuartel.toLowerCase() !== 'i') {
+                    cuartelesSet.add(numCuartel); 
+                }
             }
         });
 
@@ -488,7 +520,7 @@
     }
 
     function actualizarMetricasReales(puntos) {
-        const conFicha = puntos.filter(p => p.propietario && p.propietario !== 'Sin datos').length;
+        const conFicha = puntos.filter(p => p.propietario && normalizarTexto(p.propietario) !== 'sin datos').length;
         const sinDatos = puntos.length - conFicha;
 
         document.getElementById('totalTodas').innerText = puntos.length;

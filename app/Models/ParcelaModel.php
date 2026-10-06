@@ -11,14 +11,17 @@ class ParcelaModel extends Model
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
 
-    // Agregá o verifica las columnas exactas que tiene tu tabla parcelas en la BD
+    // Lista completa de columnas permitidas (incluye geográficas)
     protected $allowedFields    = [
         'padron', 
         'propietario', 
         'cuartel', 
         'hectareas', 
-        'uso_suelo', 
-        'estado'
+        'actividad',
+        'estado',
+        'latitud', 
+        'longitud',
+        'geom'
     ];
 
     protected $useTimestamps    = false;

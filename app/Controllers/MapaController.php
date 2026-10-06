@@ -2,51 +2,30 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
-use App\Models\ParcelaModel; // Ajustá el nombre de tu modelo si es diferente
-use Config\Database;
+use App\Models\ParcelaModel;
 
 class MapaController extends BaseController
 {
-    public function obtenerCapas()
+    // Carga la vista principal del mapa
+    public function index()
+    {
+        $data = ['titulo' => 'Mapa de Parcelas - General Paz'];
+        return view('mapa/index', $data);
+    }
+
+    // Endpoint que devuelve el JSON para renderizar en Leaflet
+    public function getParcelasJson()
     {
         $parcelaModel = new ParcelaModel();
 
-        // 1) PARCELAS: se mantiene EXACTAMENTE igual que antes (no se toca)
+        // Consulta filtrando para EXCLUIR el Cuartel 1 en todas sus variantes
         $parcelas = $parcelaModel
-            ->select('id, nro_catastro, cuartel, propietario, superficie_ha, actividad, latitud, longitud')
+            ->where('cuartel !=', 1)
+            ->where('cuartel !=', '1')
+            ->where('cuartel !=', 'Cuartel 1')
+            ->where('cuartel !=', 'Cuartel I')
             ->findAll();
 
-        // 2) TAMBOS: tabla aparte (columnas: id, productor, latitud, longitud)
-        $db = Database::connect();
-        $tambos = $db->table('tambos')
-            ->select('id, productor, latitud, longitud')
-            ->get()
-            ->getResultArray();
-
-        // Adaptamos cada tambo al MISMO formato que espera el mapa (Leaflet + filtros)
-        $tambosAdaptados = [];
-        foreach ($tambos as $t) {
-            // Solo incluimos los que tengan coordenadas cargadas
-            if (empty($t['latitud']) || empty($t['longitud'])) {
-                continue;
-            }
-
-            $tambosAdaptados[] = [
-                'id'            => 'tambo-' . $t['id'],   // id único para no chocar con parcelas
-                'nro_catastro'  => 'Tambo #' . $t['id'],  // los tambos no tienen catastro
-                'cuartel'       => 'Sin asignar',
-                'propietario'   => $t['productor'] ?: 'Sin datos',
-                'superficie_ha' => 0,
-                'actividad'     => 'Tambos',              // 👈 clave para que el filtro "Tambos" los muestre
-                'latitud'       => $t['latitud'],
-                'longitud'      => $t['longitud'],
-            ];
-        }
-
-        // 3) Unimos ambas fuentes en una sola respuesta JSON para Leaflet
-        $capas = array_merge($parcelas, $tambosAdaptados);
-
-        return $this->response->setJSON($capas);
+        return $this->response->setJSON($parcelas);
     }
 }
