@@ -64,8 +64,17 @@
         padding: 6px 2px; border-radius: 6px; border: 1px solid #e2e8f0; background: #f8fafc;
         font-size: 0.75rem; font-weight: 700; color: #334155; cursor: pointer; text-align: center;
         user-select: none;
+        transition: all 0.2s ease;
     }
-    .chip-btn.active { background: #2563eb; color: white; border-color: #2563eb; }
+    
+    /* Colores dinámicos específicos para cada chip activo */
+    .chip-btn.active.chip-agricola  { background: #eab308 !important; color: #fff !important; border-color: #ca8a04 !important; }
+    .chip-btn.active.chip-ganadera  { background: #22c55e !important; color: #fff !important; border-color: #16a34a !important; }
+    .chip-btn.active.chip-multiple  { background: #a855f7 !important; color: #fff !important; border-color: #9333ea !important; }
+    .chip-btn.active.chip-pollos    { background: #f97316 !important; color: #fff !important; border-color: #ea580c !important; }
+    .chip-btn.active.chip-colmenas  { background: #ec4899 !important; color: #fff !important; border-color: #db2777 !important; }
+    .chip-btn.active.chip-tambos    { background: #06b6d4 !important; color: #fff !important; border-color: #0891b2 !important; }
+    .chip-btn.active.chip-mixtos    { background: #a855f7 !important; color: #fff !important; border-color: #9333ea !important; }
 
     .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: #ffffff; padding: 6px; border-radius: 6px; border: 1px solid #e2e8f0; }
     .metric-card { text-align: center; }
@@ -232,13 +241,13 @@
             <div class="sidebar-section">
                 <div class="section-title">ACTIVIDAD</div>
                 <div class="chips-grid">
-                    <button type="button" class="chip-btn" data-actividad="agricola" onclick="toggleChip(this)">🌾 Agrícola</button>
-                    <button type="button" class="chip-btn" data-actividad="ganadera" onclick="toggleChip(this)">🐄 Ganadera</button>
-                    <button type="button" class="chip-btn" data-actividad="multiple" onclick="toggleChip(this)">📚 Múltiple</button>
-                    <button type="button" class="chip-btn" data-actividad="pollos" onclick="toggleChip(this)">🐓 Pollos</button>
-                    <button type="button" class="chip-btn" data-actividad="colmenas" onclick="toggleChip(this)">🐝 Colmenas</button>
-                    <button type="button" class="chip-btn" data-actividad="tambos" onclick="toggleChip(this)">🥛 Tambos</button>
-                    <button type="button" class="chip-btn" data-actividad="mixtos" onclick="toggleChip(this)">🔀 Mixtos</button>
+                    <button type="button" class="chip-btn chip-agricola" data-actividad="agricola" onclick="toggleChip(this)">🌾 Agrícola</button>
+                    <button type="button" class="chip-btn chip-ganadera" data-actividad="ganadera" onclick="toggleChip(this)">🐄 Ganadera</button>
+                    <button type="button" class="chip-btn chip-multiple" data-actividad="multiple" onclick="toggleChip(this)">📚 Múltiple</button>
+                    <button type="button" class="chip-btn chip-pollos" data-actividad="pollos" onclick="toggleChip(this)">🐓 Pollos</button>
+                    <button type="button" class="chip-btn chip-colmenas" data-actividad="colmenas" onclick="toggleChip(this)">🐝 Colmenas</button>
+                    <button type="button" class="chip-btn chip-tambos" data-actividad="tambos" onclick="toggleChip(this)">🥛 Tambos</button>
+                    <button type="button" class="chip-btn chip-mixtos" data-actividad="mixtos" onclick="toggleChip(this)">🔀 Mixtos</button>
                 </div>
             </div>
 
@@ -308,11 +317,22 @@
         </thead>
         <tbody id="tablaCuerpo">
             <?php if (!empty($parcelas)): ?>
-                <?php foreach ($parcelas as $p): ?>
+                <?php foreach ($parcelas as$p): ?>
                 <?php 
-                    // Filtro para la tabla HTML: si es Cuartel 1, se omite
-                    $numCuartelP = preg_replace('/cuartel/i', '',$p['cuartel'] ?? '');
-                    if (trim($numCuartelP) === '1' || strtolower(trim($p['cuartel'] ?? '')) === 'cuartel 1' || strtolower(trim($p['cuartel'] ?? '')) === 'cuartel i') {
+                    $cuartel =$p['cuartel'] ?? '';
+                    if ($cuartel == '1') {
+                        continue;
+                    }
+                    if ($cuartel == 'Cuartel 1') {
+                        continue;
+                    }
+                    if ($cuartel == 'cuartel 1') {
+                        continue;
+                    }
+                    if ($cuartel == 'Cuartel I') {
+                        continue;
+                    }
+                    if ($cuartel == 'cuartel i') {
                         continue;
                     }
                 ?>
@@ -360,30 +380,29 @@
     let parcelasReales = [];      
     let capaMarcadores = null;
 
-    // Diccionario de colores por tipo de actividad
     function obtenerColorActividad(actividad) {
         const act = normalizarTexto(actividad);
         
         if (act.includes('agricola') || act.includes('agricultura') || act.includes('soja') || act.includes('maiz') || act.includes('trigo')) {
-            return '#eab308'; // Amarillo / Dorado
+            return '#eab308';
         }
         if (act.includes('ganadera') || act.includes('ganaderia') || act.includes('pastizal') || act.includes('vacas') || act.includes('recria')) {
-            return '#22c55e'; // Verde
+            return '#22c55e';
         }
         if (act.includes('pollo') || act.includes('avicola') || act.includes('avicultura') || act.includes('aves')) {
-            return '#f97316'; // Naranja
+            return '#f97316';
         }
         if (act.includes('colmena') || act.includes('apicultura') || act.includes('miel')) {
-            return '#ec4899'; // Rosa / Magenta
+            return '#ec4899';
         }
         if (act.includes('tambo') || act.includes('leche')) {
-            return '#06b6d4'; // Cían / Azul claro
+            return '#06b6d4';
         }
         if (act.includes('mixto') || act.includes('mixta') || act.includes('multiple') || act.includes('varias')) {
-            return '#a855f7'; // Púrpura / Violeta
+            return '#a855f7';
         }
         
-        return '#64748b'; // Gris (Sin especificar / Otros)
+        return '#64748b';
     }
 
     function normalizarTexto(txt) {
@@ -477,8 +496,8 @@
 
             const marker = L.circleMarker([p.latitud, p.longitud], {
                 radius: 7,
-                color: '#ffffff',         // Borde blanco de contraste
-                fillColor: colorPunto,    // Color dinámico según la actividad
+                color: '#ffffff',       
+                fillColor: colorPunto,   
                 fillOpacity: 0.9,
                 weight: 2
             });
@@ -510,7 +529,7 @@
 
         let botonEditar = '';
         if (rolSesion === 'admin' || rolSesion === 'operador') {
-            botonEditar = `<div style="margin-top:10px;"><a href="<?= base_url('parcelas/editar/') ?>${p.id}" class="chip-btn" style="display:inline-block; text-decoration:none; padding:4px 8px; background:#1d6f42; color:#fff;">✏️️ Editar Ficha</a></div>`;
+            botonEditar = `<div style="margin-top:10px;"><a href="<?= base_url('parcelas/editar/') ?>${p.id}" class="chip-btn" style="display:inline-block; text-decoration:none; padding:4px 8px; background:#1d6f42; color:#fff;">✏ Editar Ficha</a></div>`;
         }
 
         box.innerHTML = `
