@@ -2,7 +2,12 @@
 
 namespace App\Controllers;
 
+
+
 use App\Libraries\AuditLogger;
+
+
+ 
 use App\Models\ParcelaModel;
 
 class Parcelas extends BaseController
@@ -16,6 +21,53 @@ class Parcelas extends BaseController
 
     // Listado de parcelas
     public function index()
+
+{
+    $anio    = $this->request->getGet('anio');
+    $cuartel = $this->request->getGet('cuartel');
+
+    $builder = $this->parcelaModel;
+    if ($anio)    { $builder = $builder->where('anio_relevamiento', (int) $anio); }
+    if ($cuartel) { $builder = $builder->like('cuartel', $cuartel); }
+
+    $data['parcelas']            = $builder->findAll();
+    $data['anioSeleccionado']    = $anio;
+    $data['cuartelSeleccionado'] = $cuartel;
+
+    return view('parcelas/index', $data);
+}
+
+    public function crear()
+    {
+        return view('parcelas/crear');
+    }
+
+    public function guardar()
+{
+    $volver = $this->request->getPost('volver') ?: base_url('parcelas');
+
+    $data = [
+        'nro_catastro'      => $this->request->getPost('nro_catastro'),
+        'latitud'           => $this->request->getPost('latitud'),
+        'longitud'          => $this->request->getPost('longitud'),
+        'superficie_ha'     => $this->request->getPost('superficie_ha'),
+        'propietario'       => $this->request->getPost('propietario'),
+        'cuartel'           => $this->request->getPost('cuartel'),
+        'anio_relevamiento' => $this->request->getPost('anio_relevamiento'),
+    ];
+
+    if ($this->parcelaModel->insert($data) === false) {
+        return redirect()->back()
+            ->withInput()
+            ->with('errores', $this->parcelaModel->errors());
+    }
+
+    return redirect()->to($volver)
+        ->with('mensaje', '✅ Parcela creada correctamente.');
+}
+
+
+
     {
         $data = [
             'titulo'   => 'Gestión de Parcelas',
@@ -69,11 +121,17 @@ class Parcelas extends BaseController
         }
     }
 
+
     // Mostrar formulario de edición y procesar actualización
     public function editar($id = null)
+
+
+    public function editar($id)
+
     {
         // 1. Buscar la parcela por ID
         $parcela = $this->parcelaModel->find($id);
+
 
         if (!$parcela) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("No se encontró la parcela con ID: $id");
@@ -110,6 +168,21 @@ class Parcelas extends BaseController
                 // Registrar actualización en audit_logs
                 AuditLogger::log('parcelas', (int)$id, 'UPDATE', $datosPrevios, $datosNuevos);
 
+        if (! $parcela) {
+
+            return redirect()->to('/parcelas')->with('error', 'Parcela no encontrada.');
+        }
+
+        if ($this->request->getMethod() === 'post') {
+
+            return redirect()->to(base_url('parcelas'))->with('error', 'Parcela no encontrada.');
+        }
+
+        if ($this->request->is('post') || $this->request->getMethod() === 'POST') {
+
+            $volver = $this->request->getPost('volver') ?: base_url('parcelas');
+
+
                 $redirectUrl = $this->request->getPost('volver') ?: base_url('parcelas');
                 return redirect()->to($redirectUrl)->with('mensaje', 'Parcela actualizada correctamente.');
             }
@@ -117,17 +190,63 @@ class Parcelas extends BaseController
             return redirect()->back()->withInput()->with('error', 'No se pudo actualizar la parcela.');
         }
 
+
         // 3. Si es GET, mostrar la vista con los datos cargados
         return view('parcelas/editar', [
             'titulo'  => 'Editar Parcela',
             'parcela' => $parcela
         ]);
+
+        return view('parcelas/editar', ['titulo' => 'Editar parcela', 'parcela' => $parcela]);
+
+        return view('parcelas/editar', ['titulo' => 'Editar Parcela', 'parcela' => $parcela]);
+
     }
 
     // Eliminar parcela
     public function eliminar($id)
     {
+
         $datosPrevios = $this->parcelaModel->find($id);
+
+        $this->parcelaModel->delete($id);
+
+        return redirect()->to('/parcelas')->with('mensaje', 'Parcela eliminada.');
+    }
+
+    public function mapaJson()
+{
+    $anio    = $this->request->getGet('anio');
+    $cuartel = $this->request->getGet('cuartel');
+
+    $builder = $this->parcelaModel;
+    if ($anio)    { $builder = $builder->where('anio_relevamiento', (int) $anio); }
+    if ($cuartel) { $builder = $builder->like('cuartel', $cuartel); }
+
+    $puntos = array_map(function ($p) {
+        return [
+            'latitud'      => (float) $p['latitud'],
+            'longitud'     => (float) $p['longitud'],
+            'nro_catastro' => $p['nro_catastro'],
+            'cuartel'      => $p['cuartel'],
+        ];
+    }, $builder->findAll());
+
+    return $this->response->setJSON($puntos);
+}
+
+        return redirect()->to(base_url('parcelas'))->with('mensaje', 'Parcela eliminada correctamente.');
+    }
+
+    public function mapaJson()
+    {
+        $anio    = $this->request->getGet('anio');
+        $cuartel = $this->request->getGet('cuartel');
+
+        $builder = $this->parcelaModel
+            ->select('parcelas.*, MAX(explotaciones.tipo_de_actividad) AS tipo_de_actividad')
+            ->join('explotaciones', 'explotaciones.id_parcelas = parcelas.id', 'left');
+
 
         if ($datosPrevios && $this->parcelaModel->delete($id)) {
             // Registrar eliminación en audit_logs
@@ -138,4 +257,10 @@ class Parcelas extends BaseController
 
         return redirect()->to(base_url('parcelas'))->with('error', 'No se pudo eliminar la parcela.');
     }
+
 }
+
+}
+
+}
+

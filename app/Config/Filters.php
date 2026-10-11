@@ -12,7 +12,6 @@ use CodeIgniter\Filters\InvalidChars;
 use CodeIgniter\Filters\PageCache;
 use CodeIgniter\Filters\PerformanceMetrics;
 use CodeIgniter\Filters\SecureHeaders;
-use App\Filters\RoleFilter; // <-- Importamos tu filtro de roles sin tocar el resto
 
 class Filters extends BaseFilters
 {
@@ -35,7 +34,6 @@ class Filters extends BaseFilters
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
-        'role'          => RoleFilter::class, // <-- Alias registrado para las rutas
     ];
 
     /**
@@ -109,5 +107,4 @@ class Filters extends BaseFilters
      * @var array<string, array<string, list<string>>>
      */
     public array $filters = [];
-    
 }

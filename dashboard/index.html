@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>BIENVENIDOS A XAMPP</title>
+
+<style>
+/* =========================
+   🎨 BASE
+========================= */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  color: rgb(252, 222, 75);
+
+  background-image: url("https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+.overlay {
+  background: rgba(0, 0, 0, 0.25);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 40px;
+  border-radius: 20px;
+  text-align: center;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+#texto-cambiando {
+  font-size: 24px;
+  margin-top: 20px;
+  transition: opacity 0.5s;
+}
+
+.fade { opacity: 0; }
+
+.botones { margin-top: 15px; }
+
+button {
+  margin: 6px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.3s;
+}
+
+.btn-xampp { background: orange; color: black; }
+.btn-twitter { background: #1da1f2; color: white; }
+.btn-facebook { background: #1877f2; color: white; }
+.btn-firebase { background: #ffca28; color: black; }
+.btn-info { background: #444; color: white; }
+.btn-music { background: #00c853; color: white; }
+
+button:hover {
+  transform: scale(1.1);
+  opacity: 0.85;
+}
+
+/* 🎵 REPRODUCTOR */
+.player {
+  margin-top: 20px;
+}
+
+input[type="range"] {
+  width: 100px;
+}
+
+/* =========================
+   🐱 GATOS
+========================= */
+#cats-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.cat {
+  position: absolute;
+  width: 80px;
+  opacity: 0.9;
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-40px) rotate(10deg); }
+  100% { transform: translateY(0px) rotate(-10deg); }
+}
+
+/* 🎵 baile con música */
+.music-active .cat {
+  animation: dance 0.6s infinite;
+}
+
+@keyframes dance {
+  0% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.2) rotate(10deg); }
+  50% { transform: scale(1) rotate(-10deg); }
+  75% { transform: scale(1.2) rotate(5deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+</style>
+</head>
+
+<body>
+
+<!-- 🐱 CONTENEDOR DE GATOS -->
+<div id="cats-container"></div>
+
+<!-- 🎵 AUDIO -->
+<audio id="musica" loop>
+  <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+</audio>
+
+<div class="overlay">
+  <div class="card">
+    <h1>🚀 XAMPP</h1>
+    <p>Apache + MariaDB + PHP + Perl</p>
+
+    <h2 id="texto-cambiando">Bienvenido a XAMPP</h2>
+
+    <!-- 🎵 REPRODUCTOR -->
+    <div class="player">
+      <button class="btn-music" onclick="playMusica()">▶️ Play</button>
+      <button class="btn-music" onclick="pauseMusica()">⏸️ Pause</button>
+      <br><br>
+      🔊 Volumen
+      <input type="range" min="0" max="1" step="0.1" onchange="cambiarVolumen(this.value)">
+      <p>🎵 Música de fondo activa</p>
+    </div>
+
+    <!-- BOTONES PRINCIPALES -->
+    <div class="botones">
+      <button class="btn-xampp" onclick="irXampp()">🌐 Sitio Oficial</button>
+      <button class="btn-twitter" onclick="irTwitter()">🐦 Twitter</button>
+      <button class="btn-facebook" onclick="irFacebook()">📘 Facebook</button>
+      <button class="btn-firebase" onclick="irFirebase()">🔥 Firebase</button>
+    </div>
+
+    <!-- BOTONES EDUCATIVOS -->
+    <div class="botones">
+      <button class="btn-info" onclick="irApache()">Apache</button>
+      <button class="btn-info" onclick="irMariaDB()">MariaDB</button>
+      <button class="btn-info" onclick="irPHP()">PHP</button>
+      <button class="btn-info" onclick="irPerl()">Perl</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* =========================
+   🌍 TEXTOS
+========================= */
+const textos = [
+  "Bienvenido a XAMPP",
+  "Welcome to XAMPP",
+  "Bienvenue à XAMPP",
+  "Benvenuto in XAMPP",
+  "Willkommen bei XAMPP",
+  "欢迎来到 XAMPP"
+];
+
+let i = 0;
+const elemento = document.getElementById("texto-cambiando");
+
+function cambiarTexto() {
+  elemento.classList.add("fade");
+
+  setTimeout(() => {
+    i = (i + 1) % textos.length;
+    elemento.innerText = textos[i];
+    elemento.classList.remove("fade");
+  }, 500);
+}
+
+setInterval(cambiarTexto, 3000);
+
+/* =========================
+   🎵 AUDIO
+========================= */
+const audio = document.getElementById("musica");
+
+function playMusica() {
+  audio.play();
+  document.body.classList.add("music-active");
+}
+
+function pauseMusica() {
+  audio.pause();
+  document.body.classList.remove("music-active");
+}
+
+function cambiarVolumen(valor) {
+  audio.volume = valor;
+}
+
+document.body.addEventListener("click", function () {
+  audio.play();
+  document.body.classList.add("music-active");
+}, { once: true });
+
+/* =========================
+   🐱 GATOS (SOLO GATOS REALES)
+========================= */
+const catsContainer = document.getElementById("cats-container");
+
+const gatos = [
+  "https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif",  // gato teclado
+  "https://media.giphy.com/media/ICOgUNjpvO0PC/giphy.gif", // gato saltando
+  "https://media.giphy.com/media/6VoDJzfRjJNbG/giphy.gif", // gato divertido
+  "https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif" // gato bailando
+];
+
+function crearGato() {
+  const cat = document.createElement("img");
+
+  cat.src = gatos[Math.floor(Math.random() * gatos.length)];
+  cat.className = "cat";
+
+  cat.style.left = Math.random() * window.innerWidth + "px";
+  cat.style.top = Math.random() * window.innerHeight + "px";
+
+  cat.style.animationDuration = (Math.random() * 3 + 2) + "s";
+
+  catsContainer.appendChild(cat);
+
+  setTimeout(() => {
+    cat.remove();
+  }, 8000);
+}
+
+setInterval(crearGato, 800);
+
+/* =========================
+   🔗 LINKS
+========================= */
+function irXampp() {
+  window.open("https://www.apachefriends.org/index.html", "_blank");
+}
+
+function irTwitter() {
+  window.open("https://twitter.com/apachefriends", "_blank");
+}
+
+function irFacebook() {
+  window.open("https://www.facebook.com/we.are.xampp", "_blank");
+}
+
+function irFirebase() {
+  window.open("https://firebase.google.com/", "_blank");
+}
+
+/* EDUCATIVO */
+function irApache() {
+  window.open("https://es.wikipedia.org/wiki/Servidor_HTTP_Apache", "_blank");
+}
+
+function irMariaDB() {
+  window.open("https://es.wikipedia.org/wiki/MariaDB", "_blank");
+}
+
+function irPHP() {
+  window.open("https://es.wikipedia.org/wiki/PHP", "_blank");
+}
+
+function irPerl() {
+  window.open("https://es.wikipedia.org/wiki/Perl", "_blank");
+}
+</script>
+
+</body>
+</html>
