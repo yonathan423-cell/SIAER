@@ -2,147 +2,342 @@
 
 <?= $this->section('estilos') ?>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
+  :root {
+    --primary-green: #198754;
+    --dark-green: #145c34;
+    --light-green: #e8f5e9;
+    --accent-gold: #c5a059;
+    --slate-800: #1e293b;
+    --slate-600: #475569;
+  }
 
-  /* Header Moderno y Elegante en Tonos Verdes Institucionales */
-  .hero-simple {
-    background: linear-gradient(135deg, #145c34 0%, #198754 100%);
+  .home-container {
+    padding: 10px 0 50px 0;
+  }
+
+  /* Banner Hero Institucional Premium */
+  .hero-executive {
+    background: linear-gradient(135deg, #0e3d22 0%, #145c34 60%, #198754 100%);
     color: #ffffff;
-    padding: 40px 30px;
-    border-radius: 16px;
-    margin-bottom: 24px;
-    text-align: center;
-    box-shadow: 0 10px 25px -5px rgba(25, 135, 84, 0.2);
+    padding: 55px 40px;
+    border-radius: 20px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 15px 35px -5px rgba(20, 92, 52, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
-  .hero-logo {
-    background: #ffffff;
-    display: inline-block;
-    padding: 8px 16px;
-    border-radius: 10px;
-    margin-bottom: 14px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  .hero-executive::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+    pointer-events: none;
   }
 
-  .hero-logo img {
-    height: 42px;
+  .hero-badge-municipal {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 24px;
+    border-radius: 40px;
+    margin-bottom: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+
+  .hero-badge-municipal img {
+    height: 38px;
     display: block;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
   }
 
-  .hero-simple h1 {
-    font-size: 2.2rem;
-    font-weight: 800;
-    margin: 0 0 6px 0;
+  .hero-badge-municipal span {
     color: #ffffff;
-    letter-spacing: -0.5px;
+    font-weight: 700;
+    font-size: 0.88rem;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
   }
 
-  .hero-simple p {
+  .hero-executive h1 {
+    font-size: 2.8rem;
+    font-weight: 900;
+    margin: 0 0 12px 0;
+    color: #ffffff;
+    letter-spacing: -0.8px;
+    line-height: 1.15;
+  }
+
+  .hero-executive p {
     color: #e2e8f0;
+    font-size: 1.1rem;
+    max-width: 800px;
+    margin: 0 auto 28px auto;
+    line-height: 1.6;
+    font-weight: 400;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-executive-primary {
+    background: #ffffff;
+    color: var(--dark-green);
+    font-weight: 800;
+    padding: 14px 28px;
+    border-radius: 12px;
+    text-decoration: none !important;
+    transition: all 0.25s ease;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
     font-size: 0.95rem;
-    margin: 0;
   }
 
-  /* Tarjetas Limpias */
-  .info-grid {
+  .btn-executive-primary:hover {
+    background: #f0fdf4;
+    color: var(--dark-green);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.2);
+  }
+
+  .btn-executive-secondary {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    font-weight: 700;
+    padding: 14px 28px;
+    border-radius: 12px;
+    text-decoration: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+  }
+
+  .btn-executive-secondary:hover {
+    background: rgba(255, 255, 255, 0.22);
+    color: #ffffff;
+    transform: translateY(-3px);
+  }
+
+  /* Tira de KPIs / Estadísticas Municipales */
+  .kpi-bar {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 20px;
-    margin-bottom: 24px;
+    margin-bottom: 35px;
   }
 
-  .info-card {
+  .kpi-card {
     background: #ffffff;
     border-radius: 14px;
-    padding: 24px;
+    padding: 20px 24px;
     border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-  }
-
-  .info-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-    border-color: #94a3b8;
-  }
-
-  .info-card h3 {
-    color: #0f172a;
-    margin-top: 0;
-    font-size: 1.1rem;
-    font-weight: 800;
-    margin-bottom: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 18px;
   }
 
-  .info-card p, .info-card ul {
-    color: #475569;
-    font-size: 0.9rem;
-    line-height: 1.6;
+  .kpi-icon-box {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    background: var(--light-green);
+    color: var(--dark-green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+  }
+
+  .kpi-data span {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--slate-600);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .kpi-data h3 {
+    margin: 2px 0 0 0;
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: var(--dark-green);
+  }
+
+  /* Grid de Pilares Técnicos del Sistema */
+  .features-section-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--dark-green);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+    margin-bottom: 35px;
+  }
+
+  .pillar-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 30px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.25s ease;
+  }
+
+  .pillar-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+    background-color: var(--primary-green);
+  }
+
+  .pillar-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
+    border-color: #a7f3d0;
+  }
+
+  .pillar-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .pillar-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--light-green);
+    color: var(--dark-green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    flex-shrink: 0;
+  }
+
+  .pillar-card h3 {
+    color: var(--dark-green);
     margin: 0;
+    font-size: 1.25rem;
+    font-weight: 800;
   }
 
-  .info-card ul {
+  .pillar-card p {
+    color: var(--slate-600);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0 0 16px 0;
+  }
+
+  .pillar-list {
     padding-left: 0;
     list-style: none;
+    margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
   }
 
-  .info-card ul li {
+  .pillar-list li {
     display: flex;
-    align-items: center;
-    gap: 8px;
+    align-items: flex-start;
+    gap: 10px;
+    color: var(--slate-800);
+    font-size: 0.92rem;
+    font-weight: 500;
   }
 
-  .info-card ul li::before {
-    content: "✓";
-    color: #198754;
-    font-weight: 800;
+  .pillar-list li i {
+    color: var(--primary-green);
+    margin-top: 3px;
+    font-size: 0.9rem;
   }
 
-  /* Contenedor del Mapa */
-  .map-box {
+  /* Visualizador GIS del Partido */
+  .gis-box {
     background: #ffffff;
-    border-radius: 14px;
+    border-radius: 18px;
     border: 1px solid #e2e8f0;
-    padding: 20px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+    padding: 28px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    margin-bottom: 35px;
   }
 
-  .map-title {
-    font-size: 1rem;
+  .gis-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .gis-title {
+    font-size: 1.2rem;
     font-weight: 800;
-    color: #0f172a;
-    margin-bottom: 14px;
+    color: var(--dark-green);
+    margin: 0;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
   }
 
   #mapa-home {
-    height: 380px;
-    border-radius: 10px;
-    border: 1px solid #e2e8f0;
+    height: 420px;
+    border-radius: 14px;
+    border: 1px solid #cbd5e1;
+    z-index: 1;
   }
 
-  /* ===================== CHAT DE DUDAS ===================== */
+  /* Floating Assistant FAB & Ventana */
   .chat-fab {
     position: fixed;
-    bottom: 24px;
-    right: 24px;
-    width: 60px;
-    height: 60px;
+    bottom: 28px;
+    right: 28px;
+    width: 62px;
+    height: 62px;
     border-radius: 50%;
-    background: #145c34;
+    background: var(--dark-green);
     color: #fff;
     border: none;
     font-size: 1.6rem;
     cursor: pointer;
-    box-shadow: 0 8px 20px -4px rgba(20, 92, 52, 0.5);
+    box-shadow: 0 8px 24px -4px rgba(20, 92, 52, 0.5);
     z-index: 1000;
     display: flex;
     align-items: center;
@@ -151,19 +346,19 @@
   }
   .chat-fab:hover {
     transform: scale(1.08);
-    background: #198754;
+    background: var(--primary-green);
   }
 
   .chat-ventana {
     position: fixed;
-    bottom: 96px;
-    right: 24px;
-    width: 340px;
+    bottom: 100px;
+    right: 28px;
+    width: 360px;
     max-width: calc(100vw - 48px);
-    height: 480px;
+    height: 500px;
     max-height: calc(100vh - 130px);
     background: #ffffff;
-    border-radius: 16px;
+    border-radius: 18px;
     box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.25);
     z-index: 1000;
     display: none;
@@ -181,9 +376,9 @@
   }
 
   .chat-header {
-    background: linear-gradient(135deg, #145c34 0%, #198754 100%);
+    background: linear-gradient(135deg, var(--dark-green) 0%, var(--primary-green) 100%);
     color: #fff;
-    padding: 14px 16px;
+    padding: 16px 18px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -191,24 +386,24 @@
   .chat-header .chat-titulo {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     font-weight: 700;
     font-size: 0.95rem;
   }
   .chat-header .chat-avatar {
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
+    font-size: 1.15rem;
   }
   .chat-header .chat-estado {
     font-size: 0.72rem;
     color: #bbf7d0;
-    font-weight: 400;
+    font-weight: 500;
     display: block;
   }
   .chat-cerrar {
@@ -229,27 +424,27 @@
     background: #f8fafc;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
   }
 
   .chat-msg {
-    max-width: 80%;
-    padding: 9px 13px;
+    max-width: 82%;
+    padding: 10px 14px;
     border-radius: 14px;
-    font-size: 0.85rem;
+    font-size: 0.88rem;
     line-height: 1.45;
     word-wrap: break-word;
     overflow-wrap: anywhere;
   }
   .chat-msg.bot {
     background: #ffffff;
-    color: #334155;
+    color: var(--slate-800);
     border: 1px solid #e2e8f0;
     align-self: flex-start;
     border-bottom-left-radius: 4px;
   }
   .chat-msg.user {
-    background: #198754;
+    background: var(--primary-green);
     color: #ffffff;
     align-self: flex-end;
     border-bottom-right-radius: 4px;
@@ -290,11 +485,12 @@
   }
   .chat-chip {
     background: #f0fdfa;
-    color: #145c34;
+    color: var(--dark-green);
     border: 1px solid #99f6e4;
     border-radius: 20px;
-    padding: 5px 11px;
+    padding: 5px 12px;
     font-size: 0.75rem;
+    font-weight: 600;
     cursor: pointer;
     transition: background 0.15s ease;
   }
@@ -303,7 +499,7 @@
   .chat-input-area {
     display: flex;
     gap: 8px;
-    padding: 10px 12px;
+    padding: 12px 14px;
     border-top: 1px solid #e2e8f0;
     background: #ffffff;
   }
@@ -311,13 +507,13 @@
     flex: 1;
     border: 1px solid #cbd5e1;
     border-radius: 20px;
-    padding: 8px 14px;
-    font-size: 0.85rem;
+    padding: 9px 16px;
+    font-size: 0.88rem;
     outline: none;
   }
-  .chat-input-area input:focus { border-color: #198754; }
+  .chat-input-area input:focus { border-color: var(--primary-green); }
   .chat-enviar {
-    background: #198754;
+    background: var(--primary-green);
     color: #fff;
     border: none;
     border-radius: 50%;
@@ -327,46 +523,127 @@
     font-size: 1rem;
     flex-shrink: 0;
   }
-  .chat-enviar:hover { background: #145c34; }
+  .chat-enviar:hover { background: var(--dark-green); }
 </style>
 <?= $this->endSection() ?>
 
 <?= $this->section('contenido') ?>
 
-<!-- Banner Simple -->
-<div class="hero-simple">
-  <div class="hero-logo">
-    <img src="<?= base_url('img/logo_municipalidad.png') ?>" alt="Municipalidad General Paz" onerror="this.style.display='none'">
+<div class="home-container">
+  <!-- Banner Executivo Principal -->
+  <div class="hero-executive text-center">
+    <div class="hero-badge-municipal">
+      <img src="<?= base_url('img/logo_municipalidad.png') ?>" alt="Municipalidad de General Paz" onerror="this.style.display='none'">
+      <span>Municipalidad de General Paz — Gestión Municipal</span>
+    </div>
+    
+    <h1>Plataforma de Inteligencia Territorial Rural</h1>
+    <p>SIAER: Sistema de Información y Análisis de Explotaciones Rurales. Tecnología GIS avanzada para la consolidación catastral, monitoreo agroproductivo e inspecciones del Municipio de General Paz.</p>
+
+    <div class="hero-actions">
+      <a href="<?= base_url('parcelas') ?>" class="btn-executive-primary">
+        <i class="fa-solid fa-map-location-dot"></i> Explorar Catastro Georreferenciado
+      </a>
+      <?php if (session()->get('rol') === 'admin'): ?>
+        <a href="<?= base_url('dashboard') ?>" class="btn-executive-secondary">
+          <i class="fa-solid fa-chart-pie"></i> Panel Ejecutivo de Control
+        </a>
+      <?php else: ?>
+        <a href="<?= base_url('mis-parcelas') ?>" class="btn-executive-secondary">
+          <i class="fa-solid fa-layer-group"></i> Consultar Mis Parcelas
+        </a>
+      <?php endif; ?>
+    </div>
   </div>
-  <h1>SIAER</h1>
-  <p>Sistema de Información y Análisis de Explotaciones Rurales — Municipalidad de General Paz</p>
+
+  <!-- Tira de Indicadores Clave de Gestión (KPIs) -->
+  <div class="kpi-bar">
+    <div class="kpi-card">
+      <div class="kpi-icon-box"><i class="fa-solid fa-draw-polygon"></i></div>
+      <div class="kpi-data">
+        <span>Parcelas Registradas</span>
+        <h3>173</h3>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon-box"><i class="fa-solid fa-vector-square"></i></div>
+      <div class="kpi-data">
+        <span>Cuarteles Integrados</span>
+        <h3>8</h3>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon-box"><i class="fa-solid fa-wheat-awn"></i></div>
+      <div class="kpi-data">
+        <span>Superficie Relevada</span>
+        <h3>120.000+ ha</h3>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon-box"><i class="fa-solid fa-shield-halved"></i></div>
+      <div class="kpi-data">
+        <span>Estado del Sistema</span>
+        <h3 style="font-size:1.15rem; color: var(--primary-green);">Operativo 100%</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pilares Institucionales de la Plataforma -->
+  <div class="features-section-title">
+    <i class="fa-solid fa-building-columns"></i>
+    <span>Módulos de Valor Público y Gestión Territorial</span>
+  </div>
+
+  <div class="pillars-grid">
+    <div class="pillar-card">
+      <div class="pillar-header">
+        <div class="pillar-icon"><i class="fa-solid fa-map-location-dot"></i></div>
+        <h3>Visor Geográfico (GIS)</h3>
+      </div>
+      <p>Delimitación cartográfica precisa de cada explotación rural sobre el partido de General Paz con tecnología de capas georreferenciadas.</p>
+      <ul class="pillar-list">
+        <li><i class="fa-solid fa-check-double"></i> Coordenadas de alta precisión geodésica.</li>
+        <li><i class="fa-solid fa-check-double"></i> Identificación inmediata por nomenclatura catastral.</li>
+      </ul>
+    </div>
+
+    <div class="pillar-card">
+      <div class="pillar-header">
+        <div class="pillar-icon"><i class="fa-solid fa-chart-column"></i></div>
+        <h3>Análisis Productivo</h3>
+      </div>
+      <p>Base de datos consolidada para el seguimiento de actividades agrícolas, ganaderas y mixtas desarrolladas en el distrito.</p>
+      <ul class="pillar-list">
+        <li><i class="fa-solid fa-check-double"></i> Categorización por tipo de explotación y superficie.</li>
+        <li><i class="fa-solid fa-check-double"></i> Reportes automatizados exportables a planillas Excel.</li>
+      </ul>
+    </div>
+
+    <div class="pillar-card">
+      <div class="pillar-header">
+        <div class="pillar-icon"><i class="fa-solid fa-user-shield"></i></div>
+        <h3>Gestión Centralizada</h3>
+      </div>
+      <p>Matriz de permisos por roles diferenciados para Administradores, Operadores Técnicos Municipales y Productores Clientes.</p>
+      <ul class="pillar-list">
+        <li><i class="fa-solid fa-check-double"></i> Auditoría completa de cambios y seguridad de datos.</li>
+        <li><i class="fa-solid fa-check-double"></i> Interfaz intuitiva y adaptada a dispositivos móviles.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Mapa GIS Integrado -->
+  <div class="gis-box">
+    <div class="gis-header">
+      <h3 class="gis-title"><i class="fa-solid fa-earth-americas"></i> Cobertura Geográfica — Partido de General Paz (Ranchos)</h3>
+      <span class="badge bg-success bg-opacity-10 text-success fw-bold px-3 py-2 rounded-pill">Visualización Activa</span>
+    </div>
+    <div id="mapa-home"></div>
+  </div>
 </div>
 
-<!-- 2 Tarjetas Básicas -->
-<div class="info-grid">
-  <div class="info-card">
-    <h3>🌱 ¿Qué es SIAER?</h3>
-    <p>Plataforma para la gestión y consulta georreferenciada de parcelas rurales del partido de General Paz, consolidando datos de actividad productiva e inspecciones.</p>
-  </div>
-
-  <div class="info-card">
-    <h3>⚡ Funcionalidades</h3>
-    <ul>
-      <li>Mapa interactivo del partido con delimitación de parcelas.</li>
-      <li>Consulta y actualización de datos productivos.</li>
-      <li>Gestión centralizada de usuarios y permisos.</li>
-    </ul>
-  </div>
-</div>
-
-<!-- Mapa -->
-<div class="map-box">
-  <div class="map-title">📍 Ubicación y Delimitaciones</div>
-  <div id="mapa-home"></div>
-</div>
-
-<!-- ===================== CHAT DE DUDAS ===================== -->
-<button class="chat-fab" id="chatFab" title="¿Dudas? Chateá con nosotros" aria-label="Abrir chat de dudas">💬</button>
+<!-- Asistente Virtual SIAER Chatbot -->
+<button class="chat-fab" id="chatFab" title="Asistente de Consultas SIAER" aria-label="Abrir asistente de consultas">💬</button>
 
 <div class="chat-ventana" id="chatVentana">
   <div class="chat-header">
@@ -385,7 +662,7 @@
   <div class="chat-chips" id="chatChips"></div>
 
   <div class="chat-input-area">
-    <input type="text" id="chatInput" placeholder="Escribí tu duda..." autocomplete="off">
+    <input type="text" id="chatInput" placeholder="Escriba su consulta..." autocomplete="off">
     <button class="chat-enviar" id="chatEnviar" aria-label="Enviar">➤</button>
   </div>
 </div>
@@ -395,61 +672,50 @@
 <?= $this->section('scripts') ?>
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-  // Centrado en el Partido de General Paz (cabecera: Ranchos)
+  // Centrado Geográfico Oficial: Ranchos, Partido de General Paz
   const mapa = L.map('mapa-home').setView([-35.5164, -58.3189], 13);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap'
+    attribution: '&copy; Municipalidad de General Paz — SIAER GIS'
   }).addTo(mapa);
 
-  // Marcador sobre Ranchos (cabecera del partido)
   L.marker([-35.5164, -58.3189]).addTo(mapa)
-    .bindPopup('<strong>Ranchos</strong><br>Cabecera del Partido de General Paz')
+    .bindPopup('<strong>Cabecera Municipal de General Paz</strong><br>Centro Administrativo SIAER')
     .openPopup();
 </script>
 
-<!-- ===================== LÓGICA DEL CHAT DE DUDAS ===================== -->
+<!-- Asistente Virtual de Consultas Institucionales -->
 <script>
   (function () {
     const BASE_CONOCIMIENTO = [
       {
         chip: "¿Qué es el SIAER?",
         claves: ["que es", "siaer", "sistema", "sirve", "para que"],
-        respuesta: "El SIAER es el Sistema de Información y Análisis de Explotaciones Rurales de la Municipalidad de General Paz. Sirve para gestionar y consultar de forma georreferenciada las parcelas rurales del partido. 🌱"
+        respuesta: "El SIAER es la Plataforma de Inteligencia Territorial de la Municipalidad de General Paz para la gestión, fiscalización y análisis georreferenciado de explotaciones rurales. 🌱"
       },
       {
-        chip: "¿Cómo registro una parcela?",
+        chip: "¿Cómo registrar una parcela?",
         claves: ["registrar", "registro", "nueva parcela", "cargar parcela", "crear", "agregar parcela"],
-        respuesta: "Ingresá al menú Parcelas → Nueva Parcela, completá el número de catastro, las coordenadas, la superficie y el propietario, y tocá 'Guardar Parcela'. ✅"
+        respuesta: "Desde el panel técnico, diríjase a 'Nueva Parcela', introduzca la nomenclatura catastral, coordenadas geodésicas, superficie en hectáreas y titularidad registrada. ✅"
       },
       {
-        chip: "¿Qué es el Nº de catastro?",
+        chip: "¿Qué es la Nomenclatura Catastral?",
         claves: ["catastro", "numero de catastro", "nomenclatura"],
-        respuesta: "El número de catastro es el identificador único de cada parcela en el registro municipal. Sirve para localizarla e identificarla oficialmente. 📌"
+        respuesta: "Es la codificación alfanumérica única asignada oficialmente a cada circunscripción, sección y parcela rural dentro del Partido de General Paz. 📌"
       },
       {
-        chip: "¿Cómo veo mis parcelas?",
-        claves: ["mis parcelas", "ver parcelas", "mis registros", "listado"],
-        respuesta: "Andá a la sección 'Mis Parcelas'. Ahí vas a ver únicamente las parcelas registradas a tu nombre. 👤"
-      },
-      {
-        chip: "¿Cómo cargo lat/long?",
-        claves: ["latitud", "longitud", "coordenadas", "lat", "long", "ubicacion"],
-        respuesta: "En el formulario de registro podés escribir las coordenadas a mano. Ejemplo para General Paz: Latitud -35.5533 y Longitud -58.3059. 🗺️"
-      },
-      {
-        chip: "¿Qué es un cuartel?",
+        chip: "Consulta por Cuarteles Rurales",
         claves: ["cuartel", "cuarteles", "division", "zona"],
-        respuesta: "Un cuartel es una subdivisión territorial del partido de General Paz. Se usa para organizar y agrupar las parcelas por sector. 📍"
+        respuesta: "El Partido de General Paz se organiza en 8 Cuarteles Rurales. El sistema permite filtrar e individualizar los indicadores agrícolas por cada uno de ellos. 📍"
       },
       {
-        chip: "📞 Contacto de la Municipalidad",
+        chip: "📞 Contacto Institucional",
         claves: ["contacto", "telefono", "direccion", "horario", "municipalidad", "ayuda", "comunicar"],
-        respuesta: "Podés contactar a la Municipalidad de General Paz:<br>📍 Obdulio Hernández Castro 2858<br>📞 2241 475364<br>🕗 Horario: 07:00 a 14:00 hs"
+        respuesta: "Municipalidad de General Paz:<br>📍 Obdulio Hernández Castro 2858, Ranchos<br>📞 Teléfono: (02241) 47-5364<br>🕗 Horario de Atención: 07:00 a 14:00 hs"
       }
     ];
 
-    const RESP_DEFECTO = "Mmm, no estoy seguro de eso. 🤔 Probá con una de estas preguntas frecuentes 👇 o contactá a la Municipalidad al 2241 475364.";
+    const RESP_DEFECTO = "Disculpe, no poseo una respuesta exacta para esa consulta. Le sugerimos seleccionar una opción recomendada o contactar a la oficina técnica municipal al (02241) 47-5364.";
 
     const fab = document.getElementById('chatFab');
     const ventana = document.getElementById('chatVentana');
@@ -481,6 +747,7 @@
       cuerpo.appendChild(t);
       cuerpo.scrollTop = cuerpo.scrollHeight;
     }
+
     function quitarTyping() {
       const t = document.getElementById('chatTyping');
       if (t) t.remove();
@@ -513,7 +780,7 @@
       setTimeout(() => {
         quitarTyping();
         agregarMensaje(texto, 'bot');
-      }, 600);
+      }, 500);
     }
 
     function procesarEnvio(texto) {
@@ -542,12 +809,13 @@
       ventana.classList.add('abierto');
       if (!bienvenidaMostrada) {
         setTimeout(() => {
-          agregarMensaje("¡Hola! 👋 Soy el asistente del SIAER. ¿En qué te puedo ayudar? Elegí una pregunta o escribime tu duda.", 'bot');
+          agregarMensaje("Bienvenido al Asistente Institucional SIAER. ¿En qué podemos asesorarle respecto a la gestión de parcelas rural?", 'bot');
         }, 300);
         bienvenidaMostrada = true;
       }
       setTimeout(() => input.focus(), 300);
     }
+
     function cerrarChat() {
       ventana.classList.remove('abierto');
     }

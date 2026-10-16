@@ -1,7 +1,14 @@
 <?= $this->extend('layout/base') ?>
 
 <?= $this->section('estilos') ?>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
+  :root {
+    --primary-green: #198754;
+    --dark-green: #145c34;
+    --light-green: #e8f5e9;
+  }
+
   .user-container {
     padding: 10px 0;
   }
@@ -17,8 +24,8 @@
 
   .user-title {
     font-size: 1.6rem;
-    color: #1f3864;
-    font-weight: 700;
+    color: var(--dark-green);
+    font-weight: 800;
     margin: 0;
   }
 
@@ -43,17 +50,17 @@
   }
 
   .search-input:focus {
-    border-color: #1f3864;
-    box-shadow: 0 0 0 3px rgba(31, 56, 100, 0.15);
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.15);
   }
 
   .btn-primary-custom {
-    background: #1f3864;
+    background: var(--primary-green);
     color: white;
     padding: 10px 18px;
     border-radius: 8px;
     text-decoration: none;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.9rem;
     border: none;
     cursor: pointer;
@@ -62,14 +69,14 @@
   }
 
   .btn-primary-custom:hover {
-    background: #162848;
+    background: var(--dark-green);
   }
 
   /* Tabla Estilizada */
   .table-card {
     background: white;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
     border: 1px solid #e2e8f0;
     overflow: hidden;
   }
@@ -81,11 +88,13 @@
   }
 
   .custom-table th {
-    background: #1f3864;
+    background: var(--dark-green);
     color: white;
     padding: 14px 18px;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   .custom-table td {
@@ -111,11 +120,11 @@
     text-transform: uppercase;
   }
 
-  .role-admin { background-color: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
-  .role-operador { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-  .role-cliente { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+  .role-admin { background-color: rgba(20, 92, 52, 0.12); color: var(--dark-green); border: 1px solid #a7f3d0; }
+  .role-operador { background-color: rgba(25, 135, 84, 0.1); color: var(--primary-green); border: 1px solid #bbf7d0; }
+  .role-cliente { background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
 
-  /* Botones de Acción (Editar con Lápiz y Eliminar) */
+  /* Botones de Acción */
   .actions-container {
     display: flex;
     gap: 8px;
@@ -123,14 +132,14 @@
   }
 
   .btn-edit {
-    color: #1e40af;
-    background: #dbeafe;
+    color: var(--dark-green);
+    background: #e8f5e9;
     padding: 6px 12px;
     border-radius: 6px;
     text-decoration: none;
     font-size: 0.85rem;
     font-weight: 600;
-    border: none;
+    border: 1px solid #c8e6c9;
     cursor: pointer;
     transition: all 0.2s;
     display: inline-flex;
@@ -139,19 +148,19 @@
   }
 
   .btn-edit:hover {
-    background: #bfdbfe;
-    color: #1e3a8a;
+    background: #c8e6c9;
+    color: var(--dark-green);
   }
 
   .btn-delete {
-    color: #ef4444;
-    background: #fee2e2;
+    color: #dc2626;
+    background: #fef2f2;
     padding: 6px 12px;
     border-radius: 6px;
     text-decoration: none;
     font-size: 0.85rem;
     font-weight: 600;
-    border: none;
+    border: 1px solid #fecaca;
     cursor: pointer;
     transition: all 0.2s;
     display: inline-flex;
@@ -212,16 +221,16 @@
 
 <div class="user-container">
   <div class="user-header">
-    <h2 class="user-title">👥 Gestión de Usuarios</h2>
+    <h2 class="user-title"><i class="fa-solid fa-users me-2"></i>Gestión de Usuarios</h2>
     
     <div class="toolbar">
-      <input type="text" id="buscador" class="search-input" placeholder="🔍 Buscar por nombre, email o rol..." onkeyup="filtrarTabla()">
-      <button onclick="abrirModalCrear()" class="btn-primary-custom">➕ Nuevo Usuario</button>
+      <input type="text" id="buscador" class="search-input" placeholder="Buscar por nombre, email o rol..." onkeyup="filtrarTabla()">
+      <button onclick="abrirModalCrear()" class="btn-primary-custom"><i class="fa-solid fa-user-plus me-1"></i> Nuevo Usuario</button>
     </div>
   </div>
 
   <?php if (session()->getFlashdata('mensaje')): ?>
-    <div style="background: #dcfce7; color: #166534; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-weight: 500;">
+    <div style="background: #dcfce7; color: #166534; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-weight: 600;">
       <?= session()->getFlashdata('mensaje') ?>
     </div>
   <?php endif; ?>
@@ -247,21 +256,21 @@
             ?>
             <tr>
               <td><strong>#<?= $u['id'] ?></strong></td>
-              <td><?= esc($nombreUser) ?></td>
+              <td class="fw-semibold"><?= esc($nombreUser) ?></td>
               <td><?= esc($u['email'] ?? '-') ?></td>
               <td>
                 <span class="role-badge <?= $classRol ?>"><?= strtoupper($rolClean) ?></span>
               </td>
               <td style="text-align: right;">
                 <div class="actions-container">
-                    <!-- Botón Lápiz para abrir el modal de edición rápida -->
+                    <!-- Botón para abrir el modal de edición rápida -->
                     <button type="button" class="btn-edit" onclick="abrirModalEditar(<?= $u['id'] ?>, '<?= esc($nombreUser, 'js') ?>', '<?= esc($u['email'] ?? '', 'js') ?>', '<?= $rolClean ?>')">
-                        ✏️ Editar
+                        <i class="fa-solid fa-pen-to-square"></i> Editar
                     </button>
 
                     <a href="<?= base_url('usuarios/eliminar/' . $u['id']) ?>" 
                        onclick="return confirm('¿Confirmas que deseas eliminar el usuario <?= esc($nombreUser, 'js') ?>?')" 
-                       class="btn-delete">🗑️ Eliminar</a>
+                       class="btn-delete"><i class="fa-solid fa-trash-can"></i> Eliminar</a>
                 </div>
               </td>
             </tr>
@@ -279,7 +288,7 @@
 <!-- Modal para Crear Usuario -->
 <div class="modal-overlay" id="modalCrear">
   <div class="modal-box">
-    <h3 style="margin-top:0; color:#1f3864;">Nuevo Usuario</h3>
+    <h3 style="margin-top:0; color: var(--dark-green);"><i class="fa-solid fa-user-plus me-2"></i>Nuevo Usuario</h3>
     <form action="<?= base_url('usuarios/guardar') ?>" method="POST">
       <div class="form-group">
         <label>Nombre Completo</label>
@@ -309,11 +318,10 @@
   </div>
 </div>
 
-<!-- Modal para Editar Usuario (Se abre con el lápiz) -->
+<!-- Modal para Editar Usuario -->
 <div class="modal-overlay" id="modalEditar">
   <div class="modal-box">
-    <h3 style="margin-top:0; color:#1f3864;">✏️ Modificar Usuario y Rol</h3>
-    <!-- Apuntalo a tu ruta de actualizar, por ejemplo usuarios/actualizar o usuarios/modificar -->
+    <h3 style="margin-top:0; color: var(--dark-green);"><i class="fa-solid fa-user-pen me-2"></i>Modificar Usuario y Rol</h3>
     <form id="formEditar" action="<?= base_url('usuarios/actualizar') ?>" method="POST">
       <input type="hidden" name="id" id="edit_id">
       
