@@ -14,14 +14,14 @@
             color: #1e293b;
         }
 
-        /* Estilos de la cabecera optimizados para ancho completo */
+        /* Estilos de la cabecera en tonos verdes institucionales */
         .cabecera {
-            background: linear-gradient(135deg, #1f3864 0%, #162848 100%);
+            background: linear-gradient(135deg, #145c34 0%, #198754 100%);
             padding: 14px 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 15px rgba(20, 92, 52, 0.2);
             position: sticky;
             top: 0;
             z-index: 1000;
@@ -55,8 +55,8 @@
 
         .cabecera__subtitulo {
             font-size: 0.85rem;
-            color: #a0aec0;
-            border-left: 1px solid rgba(255, 255, 255, 0.2);
+            color: #e2e8f0;
+            border-left: 1px solid rgba(255, 255, 255, 0.3);
             padding-left: 12px;
             font-weight: 400;
         }
@@ -82,21 +82,21 @@
 
         .cabecera__nav a:not(.cabecera__login):not(.cabecera__logout):not(.user-badge):hover {
             color: #ffffff;
-            background-color: rgba(255, 255, 255, 0.08);
+            background-color: rgba(255, 255, 255, 0.12);
         }
 
         .cabecera__login {
-            background: linear-gradient(135deg, #1d6f42 0%, #185a36 100%) !important;
-            color: #ffffff !important;
+            background: #ffffff !important;
+            color: #145c34 !important;
             padding: 8px 18px !important;
             border-radius: 8px !important;
             font-weight: 600 !important;
-            box-shadow: 0 4px 10px rgba(29, 111, 66, 0.3);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
         .user-badge {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             padding: 6px 12px !important;
             border-radius: 20px !important;
             color: #ffffff !important;
@@ -107,8 +107,8 @@
         }
 
         .user-badge .user-role {
-            background: #28a745;
-            color: #fff;
+            background: #ffffff;
+            color: #145c34;
             font-size: 0.7rem;
             padding: 2px 6px;
             border-radius: 10px;
@@ -117,8 +117,8 @@
         }
 
         .cabecera__logout {
-            background: rgba(220, 53, 69, 0.15) !important;
-            color: #ff8b8b !important;
+            background: rgba(220, 53, 69, 0.2) !important;
+            color: #ffc9c9 !important;
             border: 1px solid rgba(220, 53, 69, 0.4) !important;
             padding: 6px 12px !important;
             border-radius: 6px !important;

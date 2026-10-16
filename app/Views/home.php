@@ -4,15 +4,15 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
 <style>
 
-  /* Header Moderno y Elegante */
+  /* Header Moderno y Elegante en Tonos Verdes Institucionales */
   .hero-simple {
-    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+    background: linear-gradient(135deg, #145c34 0%, #198754 100%);
     color: #ffffff;
     padding: 40px 30px;
     border-radius: 16px;
     margin-bottom: 24px;
     text-align: center;
-    box-shadow: 0 10px 25px -5px rgba(30, 58, 138, 0.2);
+    box-shadow: 0 10px 25px -5px rgba(25, 135, 84, 0.2);
   }
 
   .hero-logo {
@@ -38,7 +38,7 @@
   }
 
   .hero-simple p {
-    color: #cbd5e1;
+    color: #e2e8f0;
     font-size: 0.95rem;
     margin: 0;
   }
@@ -100,7 +100,7 @@
 
   .info-card ul li::before {
     content: "✓";
-    color: #2563eb;
+    color: #198754;
     font-weight: 800;
   }
 
@@ -137,12 +137,12 @@
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background: #0f766e;
+    background: #145c34;
     color: #fff;
     border: none;
     font-size: 1.6rem;
     cursor: pointer;
-    box-shadow: 0 8px 20px -4px rgba(15, 118, 110, 0.5);
+    box-shadow: 0 8px 20px -4px rgba(20, 92, 52, 0.5);
     z-index: 1000;
     display: flex;
     align-items: center;
@@ -151,7 +151,7 @@
   }
   .chat-fab:hover {
     transform: scale(1.08);
-    background: #115e59;
+    background: #198754;
   }
 
   .chat-ventana {
@@ -181,7 +181,7 @@
   }
 
   .chat-header {
-    background: linear-gradient(135deg, #0f766e 0%, #115e59 100%);
+    background: linear-gradient(135deg, #145c34 0%, #198754 100%);
     color: #fff;
     padding: 14px 16px;
     display: flex;
@@ -249,7 +249,7 @@
     border-bottom-left-radius: 4px;
   }
   .chat-msg.user {
-    background: #0f766e;
+    background: #198754;
     color: #ffffff;
     align-self: flex-end;
     border-bottom-right-radius: 4px;
@@ -290,7 +290,7 @@
   }
   .chat-chip {
     background: #f0fdfa;
-    color: #0f766e;
+    color: #145c34;
     border: 1px solid #99f6e4;
     border-radius: 20px;
     padding: 5px 11px;
@@ -315,9 +315,9 @@
     font-size: 0.85rem;
     outline: none;
   }
-  .chat-input-area input:focus { border-color: #0f766e; }
+  .chat-input-area input:focus { border-color: #198754; }
   .chat-enviar {
-    background: #0f766e;
+    background: #198754;
     color: #fff;
     border: none;
     border-radius: 50%;
@@ -327,7 +327,7 @@
     font-size: 1rem;
     flex-shrink: 0;
   }
-  .chat-enviar:hover { background: #115e59; }
+  .chat-enviar:hover { background: #145c34; }
 </style>
 <?= $this->endSection() ?>
 
@@ -411,8 +411,6 @@
 <!-- ===================== LÓGICA DEL CHAT DE DUDAS ===================== -->
 <script>
   (function () {
-    // Base de conocimiento: cada duda tiene palabras clave + respuesta.
-    // Para agregar o editar una pregunta, sumá un objeto a esta lista. 👇
     const BASE_CONOCIMIENTO = [
       {
         chip: "¿Qué es el SIAER?",
@@ -453,7 +451,6 @@
 
     const RESP_DEFECTO = "Mmm, no estoy seguro de eso. 🤔 Probá con una de estas preguntas frecuentes 👇 o contactá a la Municipalidad al 2241 475364.";
 
-    // Referencias del DOM
     const fab = document.getElementById('chatFab');
     const ventana = document.getElementById('chatVentana');
     const cerrar = document.getElementById('chatCerrar');
@@ -464,15 +461,13 @@
 
     let bienvenidaMostrada = false;
 
-    // Agrega un mensaje. 'texto' del bot puede tener HTML seguro (definido por nosotros);
-    // el texto del usuario se inserta como texto plano para evitar inyección.
     function agregarMensaje(contenido, tipo) {
       const div = document.createElement('div');
       div.className = 'chat-msg ' + tipo;
       if (tipo === 'bot') {
-        div.innerHTML = contenido; // contenido controlado por nosotros
+        div.innerHTML = contenido;
       } else {
-        div.textContent = contenido; // texto del usuario: seguro
+        div.textContent = contenido;
       }
       cuerpo.appendChild(div);
       cuerpo.scrollTop = cuerpo.scrollHeight;
@@ -491,13 +486,11 @@
       if (t) t.remove();
     }
 
-    // Normaliza texto (minúsculas, sin tildes) para comparar
     function normalizar(txt) {
       return (txt || '').toString().toLowerCase()
         .normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
     }
 
-    // Busca la mejor respuesta según palabras clave
     function buscarRespuesta(textoUsuario) {
       const t = normalizar(textoUsuario);
       let mejor = null;
@@ -515,7 +508,6 @@
       return maxCoincidencias > 0 ? mejor.respuesta : RESP_DEFECTO;
     }
 
-    // Responde con animación de "escribiendo..."
     function responderBot(texto) {
       mostrarTyping();
       setTimeout(() => {
@@ -524,7 +516,6 @@
       }, 600);
     }
 
-    // Procesa el envío del usuario
     function procesarEnvio(texto) {
       const limpio = texto.trim();
       if (!limpio) return;
@@ -533,7 +524,6 @@
       responderBot(buscarRespuesta(limpio));
     }
 
-    // Genera los chips de preguntas rápidas
     function generarChips() {
       chips.innerHTML = '';
       BASE_CONOCIMIENTO.forEach(item => {
@@ -548,7 +538,6 @@
       });
     }
 
-    // Abrir / cerrar
     function abrirChat() {
       ventana.classList.add('abierto');
       if (!bienvenidaMostrada) {
@@ -563,7 +552,6 @@
       ventana.classList.remove('abierto');
     }
 
-    // Eventos
     fab.addEventListener('click', () => {
       ventana.classList.contains('abierto') ? cerrarChat() : abrirChat();
     });
@@ -573,7 +561,6 @@
       if (e.key === 'Enter') procesarEnvio(input.value);
     });
 
-    // Inicializar chips al cargar
     generarChips();
   })();
 </script>
