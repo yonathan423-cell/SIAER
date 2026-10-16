@@ -50,7 +50,7 @@ $routes->group('', ['filter' => 'role:admin'], static function ($routes) {
 $routes->group('', ['filter' => 'role:admin,operador,cliente'], static function ($routes) {
     $routes->get('parcelas', 'Parcelas::index');
     $routes->get('parcelas/mapaJson', 'Parcelas::mapaJson');
-    $routes->get('parcelas/ver/(:num)', 'Parcelas::ver/$1');   // 👈 NUEVA: detalle de parcela
+    $routes->get('parcelas/ver/(:num)', 'Parcelas::ver/$1');   // Detalle de parcela
 
     // Alias para que el fetch('mapa/obtenerCapas') funcione directo:
     $routes->get('mapa/obtenerCapas', 'Parcelas::mapaJson');

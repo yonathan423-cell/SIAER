@@ -14,7 +14,7 @@ class Parcelas extends BaseController
         $this->parcelaModel = new ParcelaModel();
     }
 
-    // Listado de parcelas
+    // Listado general de parcelas (para administradores / gestores)
     public function index()
     {
         $data = [
@@ -23,6 +23,21 @@ class Parcelas extends BaseController
         ];
 
         return view('parcelas/index', $data);
+    }
+
+    // Listado de parcelas exclusivo para el usuario cliente
+    public function misParcelas()
+    {
+        // Opcional: Si necesitas filtrar las parcelas según el usuario logueado actualmente
+        // $usuarioId = session()->get('id');
+        // $parcelasCliente = $this->parcelaModel->where('usuario_id', $usuarioId)->findAll();
+
+        $data = [
+            'titulo'   => 'Mis Parcelas',
+            'parcelas' => $this->parcelaModel->findAll() // Ajusta el filtro si corresponde a la sesión del cliente
+        ];
+
+        return view('parcelas/mis_parcelas', $data);
     }
 
     // Formulario de creación
