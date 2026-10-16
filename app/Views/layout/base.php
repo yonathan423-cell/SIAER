@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title><?= esc($titulo ?? 'SIAER') ?> - Municipalidad de General Paz</title>
+    <!-- Usamos base_url para que siempre apunte bien -->
     <link rel="stylesheet" href="<?= base_url('assets/css/base.css') ?>">
+
     <link rel="stylesheet" href="<?= base_url('assets/css/parcelas.css') ?>">
     <style>
         /* Estilos generales para estirar y modernizar el layout fluido */
@@ -175,63 +177,39 @@
         .alerta--ok { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
         .alerta--error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
     </style>
+
     <?= $this->renderSection('estilos') ?>
 </head>
 <body>
     <header class="cabecera">
-        <a href="<?= base_url('/') ?>" class="cabecera__marca" title="Volver al inicio" aria-label="Volver al inicio de SIAER">
+        <div class="cabecera__marca">
             <strong>SIAER</strong>
             <span class="cabecera__subtitulo">Municipalidad de General Paz</span>
-        </a>
+        </div>
         <nav class="cabecera__nav">
-
-            <?php if (session()->get('isLoggedIn')): ?>
-                <?php $rolSession = strtolower(session()->get('rol') ?? ''); ?>
-
-                <?php if (in_array($rolSession, ['admin', 'operador'])): ?>
-                    <a href="<?= base_url('parcelas') ?>">🗺️ Mapa</a>
-                    <a href="<?= base_url('parcelas/crear') ?>">+ Nueva parcela</a>
-                <?php endif; ?>
-
-                <?php if ($rolSession === 'admin'): ?>
-                    <a href="<?= base_url('dashboard') ?>">📊 Dashboard</a>
-                    <a href="<?= base_url('usuarios') ?>">👥 Usuarios</a>
-                <?php endif; ?>
-
-                <?php if ($rolSession === 'cliente'): ?>
-                    <a href="<?= base_url('mis-parcelas') ?>">📌 Mis Parcelas</a>
-                    <a href="<?= base_url('parcelas') ?>">🗺️ Mapa</a>
-                <?php endif; ?>
-
-                <div class="user-badge">
-                    👤 <strong><?= esc(session()->get('usuario')) ?></strong>
-                    <?php if (session()->get('rol')): ?>
-                        <span class="user-role"><?= esc(session()->get('rol')) ?></span>
-                    <?php endif; ?>
-                </div>
-
-                <a href="<?= base_url('logout') ?>" class="cabecera__logout">🚪 Salir</a>
-
-            <?php else: ?>
-                <a href="<?= base_url('login') ?>" class="cabecera__login">Iniciar sesión</a>
-            <?php endif; ?>
+            <a href="<?= base_url('/') ?>">Inicio</a>
+            <a href="<?= base_url('parcelas') ?>">Parcelas</a>
+            <a href="<?= base_url('parcelas/crear') ?>">+ Nueva parcela</a>
+            <a href="<?= base_url('login') ?>" class="cabecera__login">Iniciar sesión</a>
         </nav>
     </header>
 
     <?php $sidebarContenido = trim($this->renderSection('sidebar')); ?>
     <div class="layout">
         <?php if ($sidebarContenido !== ''): ?>
+        <!-- Barra lateral -->
         <aside class="sidebar">
             <?= $sidebarContenido ?>
         </aside>
         <?php endif; ?>
 
+        <!-- Contenido principal -->
         <main class="contenido">
             <?php if (session()->getFlashdata('mensaje')): ?>
-                <div class="alerta alerta--ok"><?= esc(session()->getFlashdata('mensaje')) ?></div>
+                <p class="alerta alerta--ok"><?= esc(session()->getFlashdata('mensaje')) ?></p>
             <?php endif; ?>
             <?php if (session()->getFlashdata('error')): ?>
-                <div class="alerta alerta--error"><?= esc(session()->getFlashdata('error')) ?></div>
+                <p class="alerta alerta--error"><?= esc(session()->getFlashdata('error')) ?></p>
             <?php endif; ?>
 
             <?= $this->renderSection('contenido') ?>
