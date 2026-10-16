@@ -65,6 +65,9 @@ $routes->group('', ['filter' => 'role:admin,operador'], static function ($routes
     $routes->get('parcelas/editar/(:num)', 'Parcelas::editar/$1');
     $routes->post('parcelas/editar/(:num)', 'Parcelas::editar/$1');
     $routes->get('parcelas/eliminar/(:num)', 'Parcelas::eliminar/$1');
+    
+    // NUEVA RUTA: Desglose de cuarteles y parcelas para el Administrador
+    $routes->get('parcelas/cuarteles', 'Parcelas::cuarteles');
 });
 
 // =========================================================================

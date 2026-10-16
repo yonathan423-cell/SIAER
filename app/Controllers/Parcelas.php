@@ -28,16 +28,25 @@ class Parcelas extends BaseController
     // Listado de parcelas exclusivo para el usuario cliente
     public function misParcelas()
     {
-        // Opcional: Si necesitas filtrar las parcelas según el usuario logueado actualmente
-        // $usuarioId = session()->get('id');
-        // $parcelasCliente = $this->parcelaModel->where('usuario_id', $usuarioId)->findAll();
-
         $data = [
             'titulo'   => 'Mis Parcelas',
-            'parcelas' => $this->parcelaModel->findAll() // Ajusta el filtro si corresponde a la sesión del cliente
+            'parcelas' => $this->parcelaModel->findAll()
         ];
 
         return view('parcelas/mis_parcelas', $data);
+    }
+
+    // Método para mostrar las parcelas agrupadas por cuartel (Panel de Administración)
+    public function cuarteles()
+    {
+        $data = [
+            'titulo'   => 'Parcelas Agrupadas por Cuartel',
+            'parcelas' => $this->parcelaModel->findAll(),
+            'usuario'  => session()->get('usuario'),
+            'rol'      => session()->get('rol')
+        ];
+
+        return view('parcelas/cuarteles_detallados', $data);
     }
 
     // Formulario de creación
