@@ -172,7 +172,7 @@
 
                 <div class="grid-full">
                     <label for="catastro" class="form-label-custom">Nº de Catastro / Partida *</label>
-                    <input type="text" class="form-control-custom" id="catastro" name="catastro" placeholder="Ej: 055-1234" required>
+                    <input type="text" class="form-control-custom" id="n_catastro" name="n_catastro" placeholder="Ej: 055-1234" required>
                 </div>
 
                 <div>

@@ -268,9 +268,10 @@
                         <i class="fa-solid fa-pen-to-square"></i> Editar
                     </button>
 
-                    <a href="<?= base_url('usuarios/eliminar/' . $u['id']) ?>" 
-                       onclick="return confirm('¿Confirmas que deseas eliminar el usuario <?= esc($nombreUser, 'js') ?>?')" 
-                       class="btn-delete"><i class="fa-solid fa-trash-can"></i> Eliminar</a>
+                    <form method="post" action="<?= base_url('usuarios/eliminar/' . $u['id']) ?>" style="display:inline; margin:0;" onsubmit="return confirm('¿Confirmas que deseas eliminar el usuario <?= esc($nombreUser, 'js') ?>?')">
+                        <?= csrf_field() ?>
+                        <button type="submit" class="btn-delete" style="font-family:inherit;"><i class="fa-solid fa-trash-can"></i> Eliminar</button>
+                    </form>
                 </div>
               </td>
             </tr>
@@ -290,6 +291,7 @@
   <div class="modal-box">
     <h3 style="margin-top:0; color: var(--dark-green);"><i class="fa-solid fa-user-plus me-2"></i>Nuevo Usuario</h3>
     <form action="<?= base_url('usuarios/guardar') ?>" method="POST">
+        <?= csrf_field() ?>
       <div class="form-group">
         <label>Nombre Completo</label>
         <input type="text" name="nombre" required placeholder="Ej: Juan Pérez">
@@ -323,6 +325,7 @@
   <div class="modal-box">
     <h3 style="margin-top:0; color: var(--dark-green);"><i class="fa-solid fa-user-pen me-2"></i>Modificar Usuario y Rol</h3>
     <form id="formEditar" action="<?= base_url('usuarios/actualizar') ?>" method="POST">
+        <?= csrf_field() ?>
       <input type="hidden" name="id" id="edit_id">
       
       <div class="form-group">

@@ -404,6 +404,7 @@
 
                 <!-- FORMULARIO DE INICIO DE SESIÓN -->
                 <form id="form-login" method="post" action="<?= base_url('login/procesar') ?>">
+                    <?= csrf_field() ?>
                     <div class="login-form">
                         <h1>Bienvenido</h1>
                         <div class="subtitulo">Ingresá tus datos para acceder a la plataforma de Producción y Ambiente.</div>
@@ -428,6 +429,7 @@
 
                 <!-- FORMULARIO DE REGISTRO (OCULTO POR DEFECTO) -->
                 <form id="form-register" method="post" action="<?= base_url('usuarios/guardar') ?>" style="display: none;">
+                    <?= csrf_field() ?>
                     <div class="login-form">
                         <h1>Crear cuenta</h1>
                         <div class="subtitulo">Completá tus datos para unirte a la plataforma.</div>

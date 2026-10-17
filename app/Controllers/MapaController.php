@@ -18,13 +18,8 @@ class MapaController extends BaseController
     {
         $parcelaModel = new ParcelaModel();
 
-        // Consulta filtrando para EXCLUIR el Cuartel 1 en todas sus variantes
-        $parcelas = $parcelaModel
-            ->where('cuartel !=', 1)
-            ->where('cuartel !=', '1')
-            ->where('cuartel !=', 'Cuartel 1')
-            ->where('cuartel !=', 'Cuartel I')
-            ->findAll();
+        // Excluye el Cuartel 1 en todas sus variantes y suma la actividad de la explotación
+        $parcelas = $parcelaModel->conExplotacion(true);
 
         return $this->response->setJSON($parcelas);
     }

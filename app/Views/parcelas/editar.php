@@ -146,6 +146,7 @@
 
 <div class="grid-container">
     <form class="form-parcela" method="post" action="<?= base_url('parcelas/editar/' . (int) $parcela['id']) ?>">
+        <?= csrf_field() ?>
         <input type="hidden" name="volver" value="<?= esc(base_url('parcelas') . (isset($_GET) && $_GET ? '?' . http_build_query($_GET) : '')) ?>">
 
         <label>Nº de catastro 
@@ -163,7 +164,7 @@
         </div>
 
         <label>Superficie (ha) 
-            <input type="text" name="superficie_ha" value="<?= esc($parcela['superficie_ha'] ?? $parcela['superficie'] ?? '') ?>">
+            <input type="text" name="superficie" value="<?= esc($parcela['superficie'] ?? '') ?>">
         </label>
 
         <label>Propietario 

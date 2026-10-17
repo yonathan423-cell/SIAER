@@ -6,27 +6,28 @@ use CodeIgniter\Model;
 
 class PermisoModel extends Model
 {
-    protected $table            = 'permisos_inspecciones';
+    protected $table            = 'permisos';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
-    protected $useTimestamps    = true;
+    protected $useTimestamps    = false;
 
     protected $allowedFields = [
-        'parcela_id', 'tipo', 'estado', 'fecha', 'observaciones',
+        'id_parcelas', 'tipo', 'estado', 'fecha', 'observaciones',
     ];
 
+    // Estados que existen hoy en los datos: Vigente, En trámite, Vencido
     protected $validationRules = [
-        'parcela_id' => 'required|integer',
-        'tipo'       => 'required|max_length[50]',
-        'estado'     => 'required|in_list[pendiente,aprobado,rechazado,vencido]',
-        'fecha'      => 'required|valid_date',
+        'id_parcelas'   => 'required|integer',
+        'tipo'          => 'permit_empty|max_length[100]',
+        'estado'        => 'permit_empty|in_list[Vigente,En trámite,Vencido]',
+        'fecha'         => 'permit_empty|valid_date',
     ];
 
     public function porParcela(int $parcelaId): array
     {
-        return $this->where('parcela_id', $parcelaId)
-                     ->orderBy('fecha', 'DESC')
-                     ->findAll();
+        return $this->where('id_parcelas', $parcelaId)
+                    ->orderBy('fecha', 'DESC')
+                    ->findAll();
     }
 }

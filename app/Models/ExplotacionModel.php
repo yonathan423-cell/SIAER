@@ -10,20 +10,20 @@ class ExplotacionModel extends Model
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
-    protected $useTimestamps    = true;
+    protected $useTimestamps    = false;
 
     protected $allowedFields = [
-        'parcela_id', 'tipo_actividad', 'cultivo_principal',
-        'tipo_ganado', 'cantidad_animales',
+        'id_parcelas', 'tipo_de_actividad', 'cultivo',
+        'otro_tipo_ganadero', 'cant_de_animales',
     ];
 
     protected $validationRules = [
-        'parcela_id'     => 'required|integer',
-        'tipo_actividad' => 'required|in_list[agricola,ganadera,mixta]',
+        'id_parcelas'       => 'required|integer',
+        'tipo_de_actividad' => 'permit_empty|max_length[100]',
     ];
 
     public function porParcela(int $parcelaId): array
     {
-        return $this->where('parcela_id', $parcelaId)->findAll();
+        return $this->where('id_parcelas', $parcelaId)->findAll();
     }
 }

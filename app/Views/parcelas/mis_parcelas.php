@@ -107,7 +107,7 @@
 
             if (!empty($parcelas) && is_array($parcelas)) {
                 foreach ($parcelas as $p) {$totalParcelas++;
-                    $sup = floatval($p['superficie_ha'] ?? 0);
+                    $sup = floatval($p['superficie'] ?? 0);
                     $superficieTotal +=$sup;
 
                     $act = trim($p['actividad'] ?? 'Sin especificar');
@@ -116,6 +116,7 @@
                     $cuartel = trim($p['cuartel'] ?? 'Sin Cuartel');
                     if (empty($cuartel)) { $cuartel = 'Sin Cuartel'; }$porCuartel[$cuartel][] =$p;
                 }
+                ksort($porCuartel, SORT_NATURAL); // Cuartel 2, 3, 4...
             }
         ?>
 
@@ -195,17 +196,18 @@
                         <tbody>
                             <?php if (!empty($porCuartel)): ?>
                                 <?php foreach ($porCuartel as $nombreCuartel =>$listaParcelas): ?>
+                                    <?php $etiqueta = stripos($nombreCuartel, 'cuartel') !== false ? $nombreCuartel : 'Cuartel ' . $nombreCuartel; ?>
                                     <!-- Fila de cabecera de Cuartel -->
                                     <tr class="table-success">
                                         <td colspan="4" class="fw-bold text-dark">
-                                            <i class="fa-solid fa-layer-group me-2"></i>Cuartel: <?= esc($nombreCuartel) ?> (<?= count($listaParcelas) ?> parcelas)
+                                            <i class="fa-solid fa-layer-group me-2"></i><?= esc($etiqueta) ?> (<?= count($listaParcelas) ?> parcelas)
                                         </td>
                                     </tr>
                                     <?php foreach ($listaParcelas as$parcela): ?>
                                         <tr>
-                                            <td class="ps-4 text-muted small">↳ <?= esc($nombreCuartel) ?></td>
+                                            <td class="ps-4 text-muted small">↳ <?= esc($etiqueta) ?></td>
                                             <td class="fw-semibold text-secondary"><?= esc($parcela['n_catastro'] ?? '') ?></td>
-                                            <td><?= esc($parcela['superficie_ha'] ?? 'N/D') ?></td>
+                                            <td><?= esc($parcela['superficie'] ?? 'N/D') ?></td>
                                             <td><?= esc($parcela['actividad'] ?? 'N/D') ?></td>
                                         </tr>
                                     <?php endforeach; ?>
