@@ -34,8 +34,11 @@ Base: `Siaer_copia_de_seguridad.zip`. El `.env`, la base de datos, las dependenc
 - "Cada cliente ve solo sus parcelas": hoy casi todas las parcelas no tienen propietario cargado, y la lista quedaría vacía.
 - Limpieza de datos en la base (propietarios vacíos, fechas de permisos vacías, tambos sin coordenadas).
 - `CI_ENVIRONMENT` sigue en `development`; cambialo a `production` antes de una entrega real.
+<<<<<<< HEAD
 
 ## 5. Paquete de despliegue (Render + Aiven)
 - `Dockerfile`, `.dockerignore` y carpeta `docker/` (configuración de Apache y script de arranque).
 - `deploy/ci_sessions.sql`: tabla de sesiones para la base de datos.
 - `app/Config/Database.php`, `Session.php`, `App.php` y `Cookie.php`: leen la conexión, la URL, el HTTPS y las sesiones desde variables de entorno **solo si existen** (`DB_HOST`, `SESSION_DRIVER`, `APP_BASE_URL`, `APP_FORCE_HTTPS`). En XAMPP todo sigue funcionando con el `.env`, como antes.
+=======
+>>>>>>> cad36d906237837253a80a09b7d6d91f0a4bdb32
