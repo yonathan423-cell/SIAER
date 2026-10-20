@@ -357,7 +357,10 @@
                             <a href="<?= base_url('parcelas/editar/' . ($p['id'] ?? '')) ?>" title="Editar" style="text-decoration:none; margin-right:8px;">✏️</a>
                         <?php endif; ?>
                         <?php if ($rolSesion === 'admin'): ?>
-                            <a href="<?= base_url('parcelas/eliminar/' . ($p['id'] ?? '')) ?>" title="Eliminar" onclick="return confirm('¿Eliminar parcela?')" style="text-decoration:none; margin-right:8px;">🗑️</a>
+                            <form method="post" action="<?= base_url('parcelas/eliminar/' . ($p['id'] ?? '')) ?>" style="display:inline; margin:0;" onsubmit="return confirm('¿Eliminar parcela?')">
+                                <?= csrf_field() ?>
+                                <button type="submit" title="Eliminar" style="background:none; border:none; padding:0; cursor:pointer; font:inherit; margin-right:8px;">🗑️</button>
+                            </form>
                         <?php endif; ?>
                         <a href="#" title="Ver Detalle" style="text-decoration:none;">👁️</a>
                     </td>
@@ -382,7 +385,11 @@
 
     function obtenerColorActividad(actividad) {
         const act = normalizarTexto(actividad);
-        
+
+        // Mixto primero: "Mixto Agrícola-Ganadero" no debe pintarse como agrícola
+        if (act.includes('mixto') || act.includes('mixta') || act.includes('multiple') || act.includes('varias')) {
+            return '#a855f7';
+        }
         if (act.includes('agricola') || act.includes('agricultura') || act.includes('soja') || act.includes('maiz') || act.includes('trigo')) {
             return '#eab308';
         }
@@ -453,7 +460,9 @@
             cuartel: p.cuartel || '',
             propietario: p.propietario || 'Sin datos',
             superficie_ha: parseFloat(p.superficie_ha || p.superficie || p.hectareas || 0),
-            actividad: p.actividad || p.uso_suelo || 'Sin especificar',
+            actividad: p.actividad || p.tipo_de_actividad || p.uso_suelo || 'Sin especificar',
+            cultivo: p.cultivo || '',
+            ganado: [p.otro_tipo_ganadero, p.cant_de_animales ? '(' + p.cant_de_animales + ')' : ''].filter(Boolean).join(' '),
             latitud: parseFloat(p.latitud || p.lat),
             longitud: parseFloat(p.longitud || p.lng || p.long)
         })).filter(p => {
@@ -476,6 +485,8 @@
                 <div class="popup-dato"><strong>Propietario:</strong> ${esc(p.propietario)}</div>
                 <div class="popup-dato"><strong>Superficie:</strong> ${p.superficie_ha.toLocaleString('es-AR')} ha</div>
                 <div class="popup-dato"><strong>Actividad:</strong> <span style="color:${colorAct}; font-weight:bold;">●</span> ${esc(p.actividad)}</div>
+                ${p.cultivo ? `<div class="popup-dato"><strong>Cultivo:</strong> ${esc(p.cultivo)}</div>` : ''}
+                ${p.ganado ? `<div class="popup-dato"><strong>Ganado:</strong> ${esc(p.ganado)}</div>` : ''}
             </div>
         `;
     }
@@ -538,6 +549,8 @@
             <p style="margin:3px 0; font-size:0.8rem;"><strong>Propietario:</strong> ${esc(p.propietario)}</p>
             <p style="margin:3px 0; font-size:0.8rem;"><strong>Superficie:</strong> ${p.superficie_ha.toLocaleString('es-AR')} ha</p>
             <p style="margin:3px 0; font-size:0.8rem;"><strong>Actividad:</strong> <span style="color:${colorAct}; font-weight:bold;">●</span> ${esc(p.actividad)}</p>
+            ${p.cultivo ? `<p style="margin:3px 0; font-size:0.8rem;"><strong>Cultivo:</strong> ${esc(p.cultivo)}</p>` : ''}
+            ${p.ganado ? `<p style="margin:3px 0; font-size:0.8rem;"><strong>Ganado:</strong> ${esc(p.ganado)}</p>` : ''}
             ${botonEditar}
         `;
     }
@@ -614,6 +627,8 @@
             const coincideCuartel = !cuartelSeleccionado || numParcelaCuartel === cuartelSeleccionado;
             
             const coincideActividad = actividadesSeleccionadas.length === 0 || actividadesSeleccionadas.some(chip => {
+                // Las explotaciones mixtas solo responden al filtro "Mixtos"
+                if ((chip === 'agricola' || chip === 'ganadera') && actividad.includes('mixt')) return false;
                 const terminos = diccionarioActividad[chip] || [chip];
                 return terminos.some(term => actividad.includes(term));
             });

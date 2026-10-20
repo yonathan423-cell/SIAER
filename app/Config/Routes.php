@@ -37,7 +37,7 @@ $routes->group('', ['filter' => 'role:admin'], static function ($routes) {
     $routes->get('usuarios/editar/(:num)', 'Usuarios::editar/$1');
     $routes->post('usuarios/editar/(:num)', 'Usuarios::editar/$1');
     $routes->post('usuarios/actualizar', 'Usuarios::actualizar');
-    $routes->get('usuarios/eliminar/(:num)', 'Usuarios::eliminar/$1');
+    $routes->post('usuarios/eliminar/(:num)', 'Usuarios::eliminar/$1');
     
     // Endpoint AJAX para cambio rápido de rol sin recargar página
     $routes->post('usuarios/actualizar-rol', 'Usuarios::actualizarRol');
@@ -64,7 +64,7 @@ $routes->group('', ['filter' => 'role:admin,operador'], static function ($routes
     $routes->post('parcelas/guardar', 'Parcelas::guardar');
     $routes->get('parcelas/editar/(:num)', 'Parcelas::editar/$1');
     $routes->post('parcelas/editar/(:num)', 'Parcelas::editar/$1');
-    $routes->get('parcelas/eliminar/(:num)', 'Parcelas::eliminar/$1');
+    $routes->post('parcelas/eliminar/(:num)', 'Parcelas::eliminar/$1');
     
     // NUEVA RUTA: Desglose de cuarteles y parcelas para el Administrador
     $routes->get('parcelas/cuarteles', 'Parcelas::cuarteles');

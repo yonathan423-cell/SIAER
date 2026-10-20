@@ -194,6 +194,24 @@ class Database extends Config
     {
         parent::__construct();
 
+        // Despliegue en contenedor (Render + Aiven): si existe DB_HOST, la
+        // conexión se toma de variables de entorno. En XAMPP se sigue usando el .env.
+        if ($host = getenv('DB_HOST')) {
+            $this->default['hostname'] = $host;
+            $this->default['port']     = (int) (getenv('DB_PORT') ?: 3306);
+            $this->default['username'] = (string) getenv('DB_USER');
+            $this->default['password'] = (string) getenv('DB_PASSWORD');
+            $this->default['database'] = (string) (getenv('DB_NAME') ?: 'defaultdb');
+
+            // Conexión cifrada: DB_SSL_CA es la ruta del certificado (lo crea el entrypoint)
+            if ($ca = getenv('DB_SSL_CA')) {
+                $this->default['encrypt'] = [
+                    'ssl_ca'     => $ca,
+                    'ssl_verify' => filter_var(getenv('DB_SSL_VERIFY'), FILTER_VALIDATE_BOOLEAN),
+                ];
+            }
+        }
+
         // Ensure that we always set the database group to 'tests' if
         // we are currently running an automated test suite, so that
         // we don't overwrite live data on accident.

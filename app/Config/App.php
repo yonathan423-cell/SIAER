@@ -199,4 +199,17 @@ class App extends BaseConfig
      * @see http://www.w3.org/TR/CSP/
      */
     public bool $CSPEnabled = false;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        // Despliegue: APP_BASE_URL (por ejemplo https://siaer.onrender.com/) y APP_FORCE_HTTPS=true
+        if ($url = getenv('APP_BASE_URL')) {
+            $this->baseURL = rtrim($url, '/') . '/';
+        }
+        if (filter_var(getenv('APP_FORCE_HTTPS'), FILTER_VALIDATE_BOOLEAN)) {
+            $this->forceGlobalSecureRequests = true;
+        }
+    }
 }

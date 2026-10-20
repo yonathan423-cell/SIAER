@@ -125,6 +125,7 @@
             if (empty($cuartel)) { $cuartel = 'Sin Cuartel'; }
             $cuartelesAgrupados[$cuartel][] = $p;
         }
+        ksort($cuartelesAgrupados, SORT_NATURAL); // Cuartel 2, 3, 4...
     }
 ?>
 
@@ -143,21 +144,22 @@
             <tbody>
                 <?php if (!empty($cuartelesAgrupados)): ?>
                     <?php foreach ($cuartelesAgrupados as $nombreCuartel => $listaParcelas): ?>
+                        <?php $etiqueta = stripos($nombreCuartel, 'cuartel') !== false ? $nombreCuartel : 'Cuartel ' . $nombreCuartel; ?>
                         <!-- Fila de Cabecera del Cuartel -->
                         <tr class="cuartel-group-row">
                             <td colspan="4" class="ps-4">
                                 <i class="fa-solid fa-folder-open me-2 text-success"></i>
-                                Cuartel: <?= esc($nombreCuartel) ?> 
+                                <?= esc($etiqueta) ?> 
                                 <span class="badge bg-success text-white ms-2 px-2 py-1 fs-6 fw-normal"><?= count($listaParcelas) ?> parcelas asociadas</span>
                             </td>
                         </tr>
                         <?php foreach ($listaParcelas as $parcela): ?>
                             <tr>
                                 <td class="ps-5 text-muted small">
-                                    <i class="fa-solid fa-angles-right text-success opacity-50 me-1"></i> Cuartel <?= esc($nombreCuartel) ?>
+                                    <i class="fa-solid fa-angles-right text-success opacity-50 me-1"></i> <?= esc($etiqueta) ?>
                                 </td>
                                 <td class="fw-bold text-dark font-monospace"><?= esc($parcela['n_catastro'] ?? 'N/D') ?></td>
-                                <td><span class="fw-semibold text-success"><?= esc($parcela['superficie_ha'] ?? '0') ?></span> <span class="text-muted small">ha</span></td>
+                                <td><span class="fw-semibold text-success"><?= esc($parcela['superficie'] ?? '0') ?></span> <span class="text-muted small">ha</span></td>
                                 <td class="pe-4">
                                     <span class="badge-actividad"><?= esc($parcela['actividad'] ?? 'Sin especificar') ?></span>
                                 </td>

@@ -1,0 +1,10 @@
+.git
+.gitignore
+.env
+tests
+node_modules
+*.sql
+writable/cache/*
+writable/logs/*
+writable/session/*
+writable/debugbar/*

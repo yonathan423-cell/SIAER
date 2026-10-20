@@ -17,9 +17,36 @@ class Parcelas extends BaseController
     // Listado general de parcelas (para administradores / gestores)
     public function index()
     {
+        $parcelas = $this->parcelaModel->conExplotacion();
+
+        // Superficies reales (sin Cuartel 1) para las tarjetas de resumen
+        $total = $recria = $urbano = $agricola = 0.0;
+        foreach ($parcelas as $x) {
+            $num = trim(str_ireplace('cuartel', '', (string) ($x['cuartel'] ?? '')));
+            if ($num === '1' || strtolower($num) === 'i') {
+                continue;
+            }
+            $sup = (float) ($x['superficie'] ?? 0);
+            $act = strtr(mb_strtolower((string) ($x['actividad'] ?? ''), 'UTF-8'), ['á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u']);
+            $total += $sup;
+            if (str_contains($act, 'urbano')) {
+                $urbano += $sup;
+            } elseif (str_contains($act, 'mixt')) {
+                // las explotaciones mixtas no se suman a agrícola ni a ganadería
+            } elseif (str_contains($act, 'agric')) {
+                $agricola += $sup;
+            } elseif (str_contains($act, 'ganader')) {
+                $recria += $sup;
+            }
+        }
+
         $data = [
-            'titulo'   => 'Gestión de Parcelas',
-            'parcelas' => $this->parcelaModel->findAll()
+            'titulo'          => 'Gestión de Parcelas',
+            'parcelas'        => $parcelas,
+            'superficie_total' => $total,
+            'sup_recria'      => $recria,
+            'sup_urbano'      => $urbano,
+            'sup_agricola'    => $agricola,
         ];
 
         return view('parcelas/index', $data);
@@ -30,7 +57,7 @@ class Parcelas extends BaseController
     {
         $data = [
             'titulo'   => 'Mis Parcelas',
-            'parcelas' => $this->parcelaModel->findAll()
+            'parcelas' => $this->parcelaModel->conExplotacion(true) // true = sin Cuartel 1 (casco urbano)
         ];
 
         return view('parcelas/mis_parcelas', $data);
@@ -41,12 +68,37 @@ class Parcelas extends BaseController
     {
         $data = [
             'titulo'   => 'Parcelas Agrupadas por Cuartel',
-            'parcelas' => $this->parcelaModel->findAll(),
+            'parcelas' => $this->parcelaModel->conExplotacion(true), // true = sin Cuartel 1 (casco urbano)
             'usuario'  => session()->get('usuario'),
             'rol'      => session()->get('rol')
         ];
 
         return view('parcelas/cuarteles_detallados', $data);
+    }
+
+    // Campo numérico opcional: vacío se guarda como NULL (evita errores de decimal con '')
+    private function valorOpcional(string $campo)
+    {
+        $v = $this->request->getPost($campo);
+        return ($v === null || trim((string) $v) === '') ? null : $v;
+    }
+
+    // JSON para el mapa (sin Cuartel 1, con la actividad de la explotación)
+    public function mapaJson()
+    {
+        return $this->response->setJSON($this->parcelaModel->conExplotacion(true));
+    }
+
+    // Detalle de una parcela
+    public function ver($id = null)
+    {
+        $parcela = $this->parcelaModel->conExplotacionPorId((int) $id);
+
+        if (!$parcela) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("No se encontró la parcela con ID: $id");
+        }
+
+        return view('parcelas/ver', ['titulo' => 'Detalle de Parcela', 'parcela' => $parcela]);
     }
 
     // Formulario de creación
@@ -73,12 +125,11 @@ class Parcelas extends BaseController
             'n_catastro'        => $this->request->getPost('n_catastro') ?? $this->request->getPost('catastro'),
             'propietario'       => $this->request->getPost('propietario'),
             'cuartel'           => $this->request->getPost('cuartel'),
-            'superficie_ha'     => $this->request->getPost('superficie_ha') ?? $this->request->getPost('superficie'),
+            'superficie'        => $this->valorOpcional('superficie'),
             'actividad'         => $this->request->getPost('actividad'),
             'latitud'           => $this->request->getPost('latitud'),
             'longitud'          => $this->request->getPost('longitud'),
-            'anio_relevamiento' => $this->request->getPost('anio_relevamiento'),
-            'estado'            => $this->request->getPost('estado') ?? 'activo',
+            'anio_relevamiento' => $this->valorOpcional('anio_relevamiento'),
         ];
 
         if ($this->parcelaModel->insert($nuevaParcela)) {
@@ -89,7 +140,9 @@ class Parcelas extends BaseController
 
             return redirect()->to(base_url('parcelas'))->with('mensaje', 'Parcela creada correctamente.');
         } else {
-            dd($this->parcelaModel->errors(), $this->parcelaModel->db()->getError());
+            log_message('error', 'No se pudo insertar la parcela: ' . json_encode($this->parcelaModel->errors()));
+
+            return redirect()->back()->withInput()->with('error', 'No se pudo guardar la parcela. Revisá los datos e intentá de nuevo.');
         }
     }
 
@@ -123,11 +176,11 @@ class Parcelas extends BaseController
                 'n_catastro'        => $this->request->getPost('n_catastro'),
                 'latitud'           => $this->request->getPost('latitud'),
                 'longitud'          => $this->request->getPost('longitud'),
-                'superficie_ha'     => $this->request->getPost('superficie_ha'),
+                'superficie'        => $this->valorOpcional('superficie'),
                 'propietario'       => $this->request->getPost('propietario'),
                 'actividad'         => $this->request->getPost('actividad'),
                 'cuartel'           => $this->request->getPost('cuartel'),
-                'anio_relevamiento' => $this->request->getPost('anio_relevamiento'),
+                'anio_relevamiento' => $this->valorOpcional('anio_relevamiento'),
             ];
 
             if ($this->parcelaModel->update($id, $datosNuevos)) {

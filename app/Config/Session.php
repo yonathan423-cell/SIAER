@@ -125,4 +125,15 @@ class Session extends BaseConfig
      * seconds.
      */
     public int $lockMaxRetries = 300;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        // En contenedores el disco es efímero: las sesiones se guardan en la tabla ci_sessions
+        if (getenv('SESSION_DRIVER') === 'database') {
+            $this->driver   = \CodeIgniter\Session\Handlers\DatabaseHandler::class;
+            $this->savePath = 'ci_sessions';
+        }
+    }
 }
