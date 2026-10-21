@@ -88,18 +88,19 @@ class Database extends Config
     {
         parent::__construct();
 
-        // Capturar el host desde cualquier formato de variable de entorno (Render o .env)
-        $host = env('database.default.hostname') 
-             ?: env('DATABASE_DEFAULT_HOSTNAME') 
-             ?: getenv('DB_HOST') 
-             ?: getenv('database_default_hostname');
+        // Capturar el host probando todas las nomenclaturas posibles (puntos, guiones bajos o mayúsculas)
+        $host = getenv('database.default.hostname')
+             ?: getenv('database_default_hostname')
+             ?: getenv('DATABASE_DEFAULT_HOSTNAME')
+             ?: getenv('DB_HOST')
+             ?: env('database.default.hostname');
 
-        if (!empty($host) && $host !== 'TU_HOST_DE_AIVEN') {
+        if (!empty($host) && $host !== 'TU_HOST_DE_AIVEN' && $host !== 'localhost') {
             $this->default['hostname'] = $host;
-            $this->default['port']     = (int) (env('database.default.port') ?: env('DATABASE_DEFAULT_PORT') ?: getenv('DB_PORT') ?: 3306);
-            $this->default['username'] = (string) (env('database.default.username') ?: env('DATABASE_DEFAULT_USERNAME') ?: getenv('DB_USER') ?: 'avnadmin');
-            $this->default['password'] = (string) (env('database.default.password') ?: env('DATABASE_DEFAULT_PASSWORD') ?: getenv('DB_PASSWORD'));
-            $this->default['database'] = (string) (env('database.default.database') ?: env('DATABASE_DEFAULT_DATABASE') ?: getenv('DB_NAME') ?: 'defaultdb');
+            $this->default['port']     = (int) (getenv('database.default.port') ?: getenv('database_default_port') ?: getenv('DATABASE_DEFAULT_PORT') ?: getenv('DB_PORT') ?: 3306);
+            $this->default['username'] = (string) (getenv('database.default.username') ?: getenv('database_default_username') ?: getenv('DATABASE_DEFAULT_USERNAME') ?: getenv('DB_USER') ?: 'avnadmin');
+            $this->default['password'] = (string) (getenv('database.default.password') ?: getenv('database_default_password') ?: getenv('DATABASE_DEFAULT_PASSWORD') ?: getenv('DB_PASSWORD'));
+            $this->default['database'] = (string) (getenv('database.default.database') ?: getenv('database_default_database') ?: getenv('DATABASE_DEFAULT_DATABASE') ?: getenv('DB_NAME') ?: 'defaultdb');
         }
 
         // Ensure that we always set the database group to 'tests' if
