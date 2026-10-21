@@ -88,13 +88,18 @@ class Database extends Config
     {
         parent::__construct();
 
-        // Soporte para variables estándar de CodeIgniter (tanto del .env como del sistema de Render)
-        if ($host = env('database.default.hostname') ?: getenv('DB_HOST')) {
+        // Capturar el host desde cualquier formato de variable de entorno (Render o .env)
+        $host = env('database.default.hostname') 
+             ?: env('DATABASE_DEFAULT_HOSTNAME') 
+             ?: getenv('DB_HOST') 
+             ?: getenv('database_default_hostname');
+
+        if (!empty($host) && $host !== 'TU_HOST_DE_AIVEN') {
             $this->default['hostname'] = $host;
-            $this->default['port']     = (int) (env('database.default.port') ?: getenv('DB_PORT') ?: 3306);
-            $this->default['username'] = (string) (env('database.default.username') ?: getenv('DB_USER'));
-            $this->default['password'] = (string) (env('database.default.password') ?: getenv('DB_PASSWORD'));
-            $this->default['database'] = (string) (env('database.default.database') ?: getenv('DB_NAME') ?: 'defaultdb');
+            $this->default['port']     = (int) (env('database.default.port') ?: env('DATABASE_DEFAULT_PORT') ?: getenv('DB_PORT') ?: 3306);
+            $this->default['username'] = (string) (env('database.default.username') ?: env('DATABASE_DEFAULT_USERNAME') ?: getenv('DB_USER') ?: 'avnadmin');
+            $this->default['password'] = (string) (env('database.default.password') ?: env('DATABASE_DEFAULT_PASSWORD') ?: getenv('DB_PASSWORD'));
+            $this->default['database'] = (string) (env('database.default.database') ?: env('DATABASE_DEFAULT_DATABASE') ?: getenv('DB_NAME') ?: 'defaultdb');
         }
 
         // Ensure that we always set the database group to 'tests' if
