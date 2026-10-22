@@ -2,6 +2,8 @@
 
 <?= $this->section('estilos') ?>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
 <style>
     /* Estilos del Módulo GIS (Mapa y Sidebar) */
     .gis-wrapper {
@@ -67,7 +69,6 @@
         transition: all 0.2s ease;
     }
     
-    /* Colores dinámicos específicos para cada chip activo */
     .chip-btn.active.chip-agricola  { background: #eab308 !important; color: #fff !important; border-color: #ca8a04 !important; }
     .chip-btn.active.chip-ganadera  { background: #22c55e !important; color: #fff !important; border-color: #16a34a !important; }
     .chip-btn.active.chip-multiple  { background: #a855f7 !important; color: #fff !important; border-color: #9333ea !important; }
@@ -115,12 +116,10 @@
         background: #e5e7eb;
     }
 
-    /* Popup del mapa */
     .popup-parcela { font-size: 0.82rem; line-height: 1.45; min-width: 180px; }
     .popup-parcela .popup-titulo { color: #1f3864; font-weight: 800; display: block; margin-bottom: 5px; word-break: break-all; }
     .popup-parcela .popup-dato { margin: 2px 0; }
 
-    /* Badges de Rol */
     .badge-rol {
         display: inline-block;
         padding: 2px 8px;
@@ -133,7 +132,6 @@
     .badge-rol-operador { background: #fef3c7; color: #92400e; }
     .badge-rol-cliente { background: #dcfce7; color: #166534; }
 
-    /* Estilos de Métricas y Tabla */
     .tarjetas-resumen-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -165,7 +163,7 @@
         background: #ffffff;
         border: 1px solid #cbd5e1;
         border-radius: 8px;
-        overflow-x: auto;
+        padding: 16px;
         margin-bottom: 30px;
     }
     .tabla-catastro {
@@ -215,7 +213,6 @@
             <span style="color:#2563eb;">🌱 MAPA DE PARCELAS</span>
             <span style="color:#64748b; font-weight:400; font-size:0.8rem;">Partido de General Paz, Buenos Aires</span>
         </div>
-        
         <div>
             <span class="badge-rol <?= $claseRol ?>">Rol: <?= esc(ucfirst($rolSesion)) ?></span>
         </div>
@@ -304,7 +301,7 @@
 
 <!-- 3. BLOQUE DE TABLA CATASTRAL -->
 <div class="contenedor-tabla-catastro">
-    <table class="tabla-catastro">
+    <table id="tablaParcelas" class="tabla-catastro">
         <thead>
             <tr>
                 <th>Parcela</th>
@@ -316,61 +313,7 @@
             </tr>
         </thead>
         <tbody id="tablaCuerpo">
-            <?php if (!empty($parcelas)): ?>
-                <?php foreach ($parcelas as$p): ?>
-                <?php 
-                    $cuartel =$p['cuartel'] ?? '';
-                    if ($cuartel == '1') {
-                        continue;
-                    }
-                    if ($cuartel == 'Cuartel 1') {
-                        continue;
-                    }
-                    if ($cuartel == 'cuartel 1') {
-                        continue;
-                    }
-                    if ($cuartel == 'Cuartel I') {
-                        continue;
-                    }
-                    if ($cuartel == 'cuartel i') {
-                        continue;
-                    }
-                ?>
-                <tr>
-                    <td>
-                        <strong>Catastro: <?= esc($p['n_catastro'] ?? $p['id']) ?></strong>
-                        <small class="subtexto-tabla"><?= esc($p['cuartel'] ?? 'S/N') ?></small>
-                    </td>
-                    <td>
-                        <span><?= esc($p['cuartel'] ?? 'S/D') ?></span>
-                        <small class="subtexto-tabla"><?= esc($p['localidad'] ?? 'General Paz') ?></small>
-                    </td>
-                    <td>
-                        <strong><?= number_format((float)($p['superficie'] ?? 0), 1, ',', '.') ?> ha</strong>
-                    </td>
-                    <td><?= esc($p['actividad'] ?? 'Ganadería Recría') ?></td>
-                    <td>
-                        <span style="color:#16a34a; font-weight:700;">● <?= esc($p['estado'] ?? 'activa') ?></span>
-                    </td>
-                    <td style="text-align:right;">
-                        <?php if (in_array($rolSesion, ['admin', 'operador'])): ?>
-                            <a href="<?= base_url('parcelas/editar/' . ($p['id'] ?? '')) ?>" title="Editar" style="text-decoration:none; margin-right:8px;">✏️</a>
-                        <?php endif; ?>
-                        <?php if ($rolSesion === 'admin'): ?>
-                            <form method="post" action="<?= base_url('parcelas/eliminar/' . ($p['id'] ?? '')) ?>" style="display:inline; margin:0;" onsubmit="return confirm('¿Eliminar parcela?')">
-                                <?= csrf_field() ?>
-                                <button type="submit" title="Eliminar" style="background:none; border:none; padding:0; cursor:pointer; font:inherit; margin-right:8px;">🗑️</button>
-                            </form>
-                        <?php endif; ?>
-                        <a href="#" title="Ver Detalle" style="text-decoration:none;">👁️</a>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <tr>
-                    <td colspan="6" style="text-align:center; padding:16px; color:#64748b;">No hay registros cargados.</td>
-                </tr>
-            <?php endif; ?>
+            <!-- Los datos se llenarán y actualizarán dinámicamente por JavaScript -->
         </tbody>
     </table>
 </div>
@@ -378,15 +321,18 @@
 
 <?= $this->section('scripts') ?>
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- jQuery y DataTables JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script>
     let mapa;
     let parcelasReales = [];      
     let capaMarcadores = null;
+    let dataTableInstance = null;
 
     function obtenerColorActividad(actividad) {
         const act = normalizarTexto(actividad);
 
-        // Mixto primero: "Mixto Agrícola-Ganadero" no debe pintarse como agrícola
         if (act.includes('mixto') || act.includes('mixta') || act.includes('multiple') || act.includes('varias')) {
             return '#a855f7';
         }
@@ -404,9 +350,6 @@
         }
         if (act.includes('tambo') || act.includes('leche')) {
             return '#06b6d4';
-        }
-        if (act.includes('mixto') || act.includes('mixta') || act.includes('multiple') || act.includes('varias')) {
-            return '#a855f7';
         }
         
         return '#64748b';
@@ -432,6 +375,15 @@
         }).addTo(mapa);
 
         setTimeout(() => { mapa.invalidateSize(); }, 200);
+
+        // Inicializar DataTable vacío o base
+        dataTableInstance = $('#tablaParcelas').DataTable({
+            language: {
+                url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+            },
+            pageLength: 5,
+            lengthMenu: [5, 10, 25, 50]
+        });
 
         cargarParcelasReales();
     });
@@ -474,6 +426,7 @@
         pintarMarcadoresReales(parcelasReales, true);
         poblarSelectCuartelesReal(parcelasReales);
         actualizarMetricasReales(parcelasReales);
+        actualizarTabla(parcelasReales);
     }
 
     function armarPopup(p) {
@@ -507,7 +460,7 @@
 
             const marker = L.circleMarker([p.latitud, p.longitud], {
                 radius: 7,
-                color: '#ffffff',       
+                color: '#ffffff',      
                 fillColor: colorPunto,   
                 fillOpacity: 0.9,
                 weight: 2
@@ -528,6 +481,44 @@
         if (reencuadrar && coords.length > 0) {
             mapa.fitBounds(coords, { padding: [30, 30] });
         }
+    }
+
+    function actualizarTabla(puntos) {
+        const rolSesion = "<?= $rolSesion ?>";
+        
+        // Destruir y vaciar tabla para recargar con DataTables de forma limpia
+        dataTableInstance.clear();
+
+        puntos.forEach(p => {
+            let accionesHtml = '';
+            if (rolSesion === 'admin' || rolSesion === 'operador') {
+                accionesHtml += `<a href="<?= base_url('parcelas/editar/') ?>${p.id}" title="Editar" style="text-decoration:none; margin-right:8px;">✏️</a>`;
+            }
+            if (rolSesion === 'admin') {
+                accionesHtml += `<form method="post" action="<?= base_url('parcelas/eliminar/') ?>${p.id}" style="display:inline; margin:0;" onsubmit="return confirm('¿Eliminar parcela?')">
+                                    <input type="hidden" name="<?= csrf_token() ?>" value="<?= csrf_hash() ?>">
+                                    <button type="submit" title="Eliminar" style="background:none; border:none; padding:0; cursor:pointer; font:inherit; margin-right:8px;">🗑️</button>
+                                 </form>`;
+            }
+            accionesHtml += `<a href="#" title="Ver Detalle" style="text-decoration:none;" onclick="event.preventDefault();">👁️</a>`;
+
+            const colParcela = `<strong>Catastro: ${esc(p.nro_catastro)}</strong><small class="subtexto-tabla">${esc(p.cuartel || 'S/N')}</small>`;
+            const colUbicacion = `<span>${esc(p.cuartel || 'S/D')}</span><small class="subtexto-tabla">General Paz</small>`;
+            const colSuperficie = `<strong>${p.superficie_ha.toLocaleString('es-AR')} ha</strong>`;
+            const colProduccion = esc(p.actividad);
+            const colEstado = `<span style="color:#16a34a; font-weight:700;">● activa</span>`;
+
+            dataTableInstance.row.add([
+                colParcela,
+                colUbicacion,
+                colSuperficie,
+                colProduccion,
+                colEstado,
+                accionesHtml
+            ]);
+        });
+
+        dataTableInstance.draw();
     }
 
     function mostrarDetalleReal(p, rolSesion) {
@@ -627,7 +618,6 @@
             const coincideCuartel = !cuartelSeleccionado || numParcelaCuartel === cuartelSeleccionado;
             
             const coincideActividad = actividadesSeleccionadas.length === 0 || actividadesSeleccionadas.some(chip => {
-                // Las explotaciones mixtas solo responden al filtro "Mixtos"
                 if ((chip === 'agricola' || chip === 'ganadera') && actividad.includes('mixt')) return false;
                 const terminos = diccionarioActividad[chip] || [chip];
                 return terminos.some(term => actividad.includes(term));
@@ -640,6 +630,7 @@
 
         pintarMarcadoresReales(parcelasFiltradas, true);
         actualizarMetricasReales(parcelasFiltradas);
+        actualizarTabla(parcelasFiltradas);
     }
 
     function toggleChip(btn) {
