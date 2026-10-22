@@ -113,42 +113,6 @@
             background-color: #ffffff;
         }
 
-        /* Pestañas Iniciar Sesión / Registrarse */
-        .login-tabs {
-            display: flex;
-            border-bottom: 2px solid #edf2f7;
-            margin-bottom: 28px;
-        }
-
-        .login-tab-btn {
-            flex: 1;
-            text-align: center;
-            background: none;
-            border: none;
-            padding-bottom: 12px;
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: #1d3254;
-            cursor: pointer;
-            position: relative;
-            text-decoration: none;
-        }
-
-        .login-tab-btn.active {
-            color: #008837;
-        }
-
-        .login-tab-btn.active::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 10%;
-            width: 80%;
-            height: 3px;
-            background-color: #008837;
-            border-radius: 3px 3px 0 0;
-        }
-
         .login-form h1 {
             margin: 0 0 6px;
             color: #0b2e63;
@@ -180,7 +144,7 @@
             align-items: center;
         }
 
-        .input-icon-wrapper input, .input-icon-wrapper select {
+        .input-icon-wrapper input {
             width: 100%;
             padding: 10px 38px 10px 12px;
             border: 1px solid #cbd5e0;
@@ -191,7 +155,7 @@
             background-color: #ffffff;
         }
 
-        .input-icon-wrapper input:focus, .input-icon-wrapper select:focus {
+        .input-icon-wrapper input:focus {
             border-color: #008837;
             box-shadow: 0 0 0 3px rgba(0, 136, 55, 0.12);
         }
@@ -386,15 +350,9 @@
             </div>
         </div>
 
-        <!-- PANEL DERECHO (LOGIN / REGISTRO) -->
+        <!-- PANEL DERECHO (SOLO LOGIN) -->
         <div class="login-form-container">
             <div>
-                <!-- Pestañas de Navegación -->
-                <div class="login-tabs">
-                    <button type="button" class="login-tab-btn active" id="btn-tab-login" onclick="switchAuthTab('login')">Iniciar sesión</button>
-                    <button type="button" class="login-tab-btn" id="btn-tab-register" onclick="switchAuthTab('register')">Registrarse</button>
-                </div>
-
                 <!-- Mensaje de éxito flashdata -->
                 <?php if (session()->getFlashdata('mensaje')): ?>
                     <div class="login-alerta login-alerta--ok">
@@ -426,44 +384,6 @@
                         <button type="submit" class="btn-submit">Iniciar sesión</button>
                     </div>
                 </form>
-
-                <!-- FORMULARIO DE REGISTRO (OCULTO POR DEFECTO) -->
-                <form id="form-register" method="post" action="<?= base_url('usuarios/guardar') ?>" style="display: none;">
-                    <?= csrf_field() ?>
-                    <div class="login-form">
-                        <h1>Crear cuenta</h1>
-                        <div class="subtitulo">Completá tus datos para unirte a la plataforma.</div>
-
-                        <label for="reg-nombre">Nombre completo</label>
-                        <div class="input-icon-wrapper">
-                            <input type="text" id="reg-nombre" name="nombre" placeholder="Tu nombre" required>
-                            <i class="fa-regular fa-user input-icon"></i>
-                        </div>
-
-                        <label for="reg-email">Correo electrónico</label>
-                        <div class="input-icon-wrapper">
-                            <input type="email" id="reg-email" name="email" placeholder="ejemplo@municipiogp.gob.ar" required>
-                            <i class="fa-regular fa-envelope input-icon"></i>
-                        </div>
-
-                        <label for="reg-password">Contraseña</label>
-                        <div class="input-icon-wrapper">
-                            <input type="password" id="reg-password" name="password" placeholder="••••••••" required>
-                            <i class="fa-regular fa-eye input-icon" style="cursor: pointer; pointer-events: auto;" onclick="togglePassword('reg-password', this)"></i>
-                        </div>
-
-                        <label for="reg-rol">Tipo de usuario</label>
-                        <div class="input-icon-wrapper">
-                            <select id="reg-rol" name="rol" required>
-                                <option value="usuario" selected>Cliente</option>
-                                <option value="operador">Operador</option>
-                                <option value="admin">Administrador</option>
-                            </select>
-                        </div>
-
-                        <button type="submit" class="btn-submit" style="margin-top: 24px;">Registrarse</button>
-                    </div>
-                </form>
             </div>
 
             <div class="login-pie">
@@ -477,25 +397,6 @@
 
     <!-- SCRIPT DE INTERACCIÓN -->
     <script>
-        function switchAuthTab(mode) {
-            const formLogin = document.getElementById('form-login');
-            const formRegister = document.getElementById('form-register');
-            const tabLogin = document.getElementById('btn-tab-login');
-            const tabRegister = document.getElementById('btn-tab-register');
-
-            if (mode === 'login') {
-                formLogin.style.display = 'block';
-                formRegister.style.display = 'none';
-                tabLogin.classList.add('active');
-                tabRegister.classList.remove('active');
-            } else {
-                formLogin.style.display = 'none';
-                formRegister.style.display = 'block';
-                tabRegister.classList.add('active');
-                tabLogin.classList.remove('active');
-            }
-        }
-
         function togglePassword(inputId, icon) {
             const input = document.getElementById(inputId);
             if (input.type === 'password') {
